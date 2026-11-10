@@ -15,8 +15,8 @@ INSERT INTO sedes (sede_id, nombre, ciudad, telefono)
 VALUES
 (
     '11111111-1111-4111-8111-111111111111',
-    'Cancún',
-    'Cancún',
+    U&'Canc\00fan',
+    U&'Canc\00fan',
     '9980000001'
 ),
 (
