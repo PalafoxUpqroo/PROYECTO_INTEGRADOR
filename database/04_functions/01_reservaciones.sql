@@ -120,6 +120,8 @@ BEGIN
         numero_huespedes,
         estado,
         total,
+        total_alojamiento,
+        total_pagado,
         moneda,
         observaciones
     )
@@ -131,8 +133,10 @@ BEGIN
         p_fecha_entrada,
         p_fecha_salida,
         p_numero_huespedes,
-        p_estado,
+                p_estado,
         v_total,
+        v_total,
+        0,
         v_moneda,
         p_observaciones
     )
