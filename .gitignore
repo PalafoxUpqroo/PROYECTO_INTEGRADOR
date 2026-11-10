@@ -1,0 +1,18 @@
+
+# Credenciales
+.env
+
+# Respaldos de bases de datos
+backups/
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Visual Studio Code
+.vscode/
