@@ -25,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_bitacora_tabla_fecha
 CREATE INDEX IF NOT EXISTS idx_bitacora_registro
     ON bitacora (registro_id);
 
+
 CREATE OR REPLACE FUNCTION fn_registrar_bitacora()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -33,41 +34,33 @@ DECLARE
     v_anterior JSONB;
     v_nuevo JSONB;
     v_registro_id TEXT;
+    v_datos JSONB;
 BEGIN
     IF TG_OP = 'INSERT' THEN
         v_nuevo := TO_JSONB(NEW);
-        v_registro_id := COALESCE(
-            v_nuevo ->> 'reservacion_id',
-            v_nuevo ->> 'huesped_id',
-            v_nuevo ->> 'habitacion_id',
-            v_nuevo ->> 'pago_id',
-            v_nuevo ->> 'servicio_id',
-            v_nuevo ->> 'reservacion_servicio_id'
-        );
+        v_datos := v_nuevo;
 
     ELSIF TG_OP = 'UPDATE' THEN
         v_anterior := TO_JSONB(OLD);
         v_nuevo := TO_JSONB(NEW);
-        v_registro_id := COALESCE(
-            v_nuevo ->> 'reservacion_id',
-            v_nuevo ->> 'huesped_id',
-            v_nuevo ->> 'habitacion_id',
-            v_nuevo ->> 'pago_id',
-            v_nuevo ->> 'servicio_id',
-            v_nuevo ->> 'reservacion_servicio_id'
-        );
+        v_datos := v_nuevo;
 
     ELSIF TG_OP = 'DELETE' THEN
         v_anterior := TO_JSONB(OLD);
-        v_registro_id := COALESCE(
-            v_anterior ->> 'reservacion_id',
-            v_anterior ->> 'huesped_id',
-            v_anterior ->> 'habitacion_id',
-            v_anterior ->> 'pago_id',
-            v_anterior ->> 'servicio_id',
-            v_anterior ->> 'reservacion_servicio_id'
-        );
+        v_datos := v_anterior;
     END IF;
+
+    v_registro_id := COALESCE(
+        v_datos ->> 'reservacion_id',
+        v_datos ->> 'huesped_id',
+        v_datos ->> 'habitacion_id',
+        v_datos ->> 'tarifa_id',
+        v_datos ->> 'temporada_id',
+        v_datos ->> 'pago_id',
+        v_datos ->> 'servicio_id',
+        v_datos ->> 'reservacion_servicio_id',
+        v_datos ->> 'sede_id'
+    );
 
     INSERT INTO bitacora (
         tabla_afectada,
@@ -93,3 +86,4 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+
