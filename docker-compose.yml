@@ -20,8 +20,15 @@ services:
       - max_replication_slots=10
       - -c
       - max_prepared_transactions=20
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=test -f /backups/cancun/wal/%f || cp %p /backups/cancun/wal/%f
+      - -c
+      - archive_timeout=60s
     volumes:
       - hotel_cancun_data:/var/lib/postgresql
+      - ./backups/cancun:/backups/cancun
     networks:
       - hotel_red
 
