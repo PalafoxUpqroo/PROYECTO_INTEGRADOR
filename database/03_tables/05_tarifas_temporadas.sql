@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS temporadas (
         UNIQUE (sede_id, nombre, fecha_inicio)
 );
 
+-- Indice unico requerido para la identidad de replicacion.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_temporadas_sede_id
+    ON temporadas (sede_id, temporada_id);
+
 CREATE INDEX IF NOT EXISTS idx_temporadas_sede_fechas
     ON temporadas (sede_id, fecha_inicio, fecha_fin);
 

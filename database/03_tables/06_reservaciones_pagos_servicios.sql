@@ -144,6 +144,10 @@ CREATE TABLE IF NOT EXISTS pagos (
         REFERENCES reservaciones(sede_id, reservacion_id)
 );
 
+-- Indice unico requerido para la identidad de replicacion.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_sede_id
+    ON pagos (sede_id, pago_id);
+
 CREATE INDEX IF NOT EXISTS idx_pagos_reservacion
     ON pagos (sede_id, reservacion_id);
 
@@ -209,5 +213,8 @@ CREATE TABLE IF NOT EXISTS reservacion_servicios (
         UNIQUE (reservacion_id, servicio_id)
 );
 
+-- Indice unico requerido para la identidad de replicacion.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_reservacion_servicios_sede_id
+    ON reservacion_servicios (sede_id, reservacion_servicio_id);
 CREATE INDEX IF NOT EXISTS idx_reservacion_servicios_reservacion
     ON reservacion_servicios (reservacion_id);
