@@ -4,7 +4,7 @@ Sistema de base de datos distribuida para administrar las reservaciones de una c
 
 ## 1. Objetivo
 
-Implementar una solución distribuida que permita administrar las operaciones de cada sede de manera independiente, evitar reservaciones simultáneas sobre una misma habitación, consolidar información en un nodo central y ofrecer mecanismos de respaldo y recuperación ante fallos.
+Implementar una solución distribuida que permita administrar las operaciones de cada sede, evitar reservaciones simultáneas sobre una misma habitación, consolidar información en un nodo central y ofrecer mecanismos de respaldo y recuperación ante fallos.
 
 ## 2. Arquitectura
 
@@ -21,7 +21,9 @@ Las tres sedes administran sus propias reservaciones, huéspedes, habitaciones, 
 
 El nodo central recibe información de las sedes mediante replicación lógica y permite consultar sus datos mediante `postgres_fdw`.
 
-Las reservaciones del nodo central están particionadas por sede. El traslado de reservaciones entre nodos se implementa mediante coordinación en Python y transacciones preparadas de PostgreSQL (2PC).
+Las reservaciones del nodo central están particionadas por sede. El traslado de reservaciones entre nodos se implementa mediante coordinación desde Python y transacciones preparadas de PostgreSQL (2PC).
+
+La arquitectura detallada se encuentra en [10_diagrama_arquitectura.md](documentation/10_diagrama_arquitectura.md).
 
 ### Tecnologías
 
@@ -91,7 +93,7 @@ POSTGRES_USER=hotel_admin
 POSTGRES_PASSWORD=TU_CONTRASEÑA_SEGURA
 ```
 
-La contraseña debe ser sustituida por una propia. No se debe compartir ni subir el archivo `.env` al repositorio.
+La contraseña debe sustituirse por una propia. No se debe compartir ni subir el archivo `.env` al repositorio.
 
 Para ejecutar el cliente y las pruebas Python, configurar también la variable de entorno en PowerShell:
 
@@ -127,6 +129,8 @@ El instalador está diseñado para bases de datos nuevas y vacías. Comprueba qu
 
 **No ejecutar el instalador sobre bases de datos que ya contienen información del proyecto.** No es un actualizador ni un mecanismo para reconstruir una instalación existente.
 
+El instalador fue revisado, pero todavía no se ha validado de principio a fin en un entorno limpio independiente. Por ello, su ejecución en una instalación nueva requiere verificar los resultados de cada etapa.
+
 ### 6.2 Levantar los cuatro nodos
 
 Desde la raíz del proyecto:
@@ -143,6 +147,8 @@ Verificar que estén activos los siguientes contenedores:
 - `hotel-postgres-tulum`
 - `hotel-postgres-bacalar`
 - `hotel-postgres-central`
+
+Estos comandos corresponden al entorno del proyecto. No eliminar volúmenes ni contenedores de otros proyectos Docker.
 
 ### 6.3 Ejecutar el instalador
 
@@ -170,7 +176,7 @@ Los scripts están separados por responsabilidad:
 | `04_functions`   | Funciones PL/pgSQL para gestionar reservaciones.                                                 |
 | `05_triggers`    | Bitácora, auditoría y cálculo automático de importes.                                            |
 | `06_views`       | Vistas operativas.                                                                               |
-| `07_indexes`     | Índices de optimización y datos para pruebas de rendimiento.                                     |
+| `07_indexes`     | Índices de optimización y elementos para pruebas de rendimiento.                                 |
 | `08_partitions`  | Particionamiento de reservaciones y tablas auxiliares centrales.                                 |
 | `09_distributed` | Publicaciones de replicación, configuración FDW y suscripciones.                                 |
 
@@ -187,6 +193,8 @@ El instalador organiza la ejecución de los scripts en los nodos correspondiente
 - Registro de pagos.
 - Administración de servicios adicionales.
 
+El modelo entidad-relación se encuentra en [09_diagrama_entidad_relacion.md](documentation/09_diagrama_entidad_relacion.md).
+
 ### 8.2 Características orientadas a objetos de PostgreSQL
 
 - Tipos de datos compuestos.
@@ -198,8 +206,8 @@ El instalador organiza la ejecución de los scripts en los nodos correspondiente
 ### 8.3 Integridad y operaciones
 
 - Restricciones de exclusión GiST para evitar traslapes de reservaciones.
-- Funciones PL/pgSQL para crear, consultar disponibilidad, cancelar y gestionar reservaciones.
-- Bloqueo de habitaciones mediante `SELECT FOR UPDATE`.
+- Funciones PL/pgSQL para crear reservaciones, consultar disponibilidad, cancelar y gestionar operaciones.
+- Bloqueo de habitaciones mediante `SELECT FOR UPDATE` en las operaciones correspondientes.
 - Triggers para auditoría y bitácora.
 - Cálculo automático de importes, pagos y saldos.
 - Vistas operativas.
@@ -266,11 +274,13 @@ python/tests/test_concurrencia.py
 
 Utiliza dos hilos y conexiones independientes para intentar reservar simultáneamente una misma habitación y periodo.
 
-El resultado esperado es:
+El resultado comprobado fue:
 
 - Una reservación aceptada.
 - Una reservación rechazada por la restricción de exclusión GiST.
 - Ninguna sobreventa de la habitación.
+
+La operación rechazada produjo el código SQLSTATE `23P01`, correspondiente a una violación de restricción de exclusión.
 
 Ejecutar:
 
@@ -288,9 +298,10 @@ python/tests/test_2pc.py
 
 Comprueba el traslado de una reservación entre Cancún y Tulum mediante:
 
-- `PREPARE TRANSACTION`
-- `COMMIT PREPARED`
-- `ROLLBACK PREPARED`
+- `PREPARE TRANSACTION`.
+- `COMMIT PREPARED`.
+
+La prueba comprobó que la reservación dejó de existir en el nodo de origen, se conservó en el nodo de destino con la misma identificación y no quedaron transacciones preparadas pendientes.
 
 Ejecutar:
 
@@ -302,7 +313,7 @@ Estas pruebas utilizan conexiones y datos de las instancias del proyecto. Antes 
 
 ## 11. Optimización y rendimiento
 
-Se realizaron pruebas de rendimiento con 50,000 reservaciones generadas para comparar consultas antes y después de utilizar índices.
+Se realizaron pruebas de rendimiento con 50,000 reservaciones generadas para comparar consultas con y sin utilización de índices.
 
 Los resultados registrados durante el desarrollo fueron:
 
@@ -313,11 +324,13 @@ Los resultados registrados durante el desarrollo fueron:
 
 Las pruebas utilizaron `EXPLAIN ANALYZE` para revisar los planes de ejecución.
 
-Los tiempos corresponden a las ejecuciones realizadas durante el desarrollo y pueden variar según el equipo y las condiciones de ejecución.
+Para obtener la comparación sin índices se simularon las condiciones de ejecución deshabilitando los métodos de acceso por índices. Por tanto, los valores representan las ejecuciones medidas durante las pruebas y no una comparación histórica entre dos bases de datos diferentes.
+
+Los tiempos pueden variar según el equipo y las condiciones de ejecución.
 
 ## 12. Respaldo y recuperación
 
-El archivado WAL se configura desde `docker-compose.yml` para el nodo Cancún.
+El archivado WAL se configura para el nodo Cancún.
 
 La configuración contempla:
 
@@ -330,10 +343,10 @@ Se realizaron pruebas de:
 
 - Respaldo físico mediante `pg_basebackup`.
 - Verificación mediante `pg_verifybackup`.
-- Restauración de una instancia.
+- Restauración de una instancia independiente.
 - Recuperación a un punto en el tiempo (PITR) mediante `recovery.signal` y `restore_command`.
 
-El procedimiento de archivado y recuperación se demostró en Cancún. No se debe asumir que los otros dos nodos de sede tienen archivado WAL habilitado.
+El procedimiento de archivado y recuperación se demostró en Cancún. No se debe asumir que los otros nodos de sede tienen archivado WAL habilitado.
 
 Los respaldos se almacenan localmente en `backups/`, directorio excluido del control de versiones.
 
@@ -368,21 +381,42 @@ git diff --check
 - Las pruebas deben ejecutarse en el entorno destinado al proyecto.
 - El instalador está destinado exclusivamente a bases nuevas y vacías.
 - La configuración de archivado WAL documentada corresponde al nodo Cancún.
+- La arquitectura implementada no proporciona alta disponibilidad ni recuperación automática ante la caída de un nodo.
+- La replicación lógica centraliza información, pero no sustituye una política completa de respaldo y recuperación para todas las sedes.
+- La configuración actual no debe considerarse un aislamiento de escritura completo por sede para un entorno de producción.
 
-## 15. Estado del proyecto
+## 15. Documentación complementaria
 
-El proyecto cuenta con:
+Los documentos del proyecto se encuentran en `documentation/`:
+
+| Archivo                              | Descripción                                                    |
+| ------------------------------------ | -------------------------------------------------------------- |
+| `01_informe_academico.md`            | Informe académico del proyecto.                                |
+| `02_requisitos_historias_usuario.md` | Requisitos funcionales, no funcionales e historias de usuario. |
+| `03_planificacion_scrum.md`          | Planificación y organización del desarrollo.                   |
+| `04_manual_tecnico.md`               | Arquitectura, implementación y procedimientos técnicos.        |
+| `05_manual_usuario.md`               | Instrucciones de uso del cliente.                              |
+| `06_referencias_ieee.md`             | Referencias bibliográficas.                                    |
+| `07_declaracion_uso_ia.md`           | Declaración del uso de inteligencia artificial.                |
+| `08_bitacora_uso_ia.md`              | Registro de interacciones y apoyo de IA.                       |
+| `09_diagrama_entidad_relacion.md`    | Diagrama del modelo de datos.                                  |
+| `10_diagrama_arquitectura.md`        | Diagrama de la arquitectura distribuida.                       |
+
+## 16. Estado del proyecto
+
+El proyecto cuenta con los siguientes componentes implementados y probados:
 
 - Estructuras relacionales y características orientadas a objetos de PostgreSQL.
 - Funciones, triggers, bitácora y vistas.
-- Índices y pruebas de rendimiento.
+- Índices y pruebas de rendimiento con 50,000 reservaciones.
 - Pruebas de concurrencia.
-- Respaldo físico y recuperación PITR.
+- Respaldo físico y recuperación PITR en Cancún.
 - Particionamiento central.
-- Replicación lógica.
+- Replicación lógica desde las tres sedes.
 - Consultas distribuidas mediante FDW.
 - Traslado de reservaciones mediante 2PC.
 - Cliente Python de demostración.
-- Instalador automatizado para instalaciones limpias.
 
-La documentación técnica, las evidencias y los manuales complementarios se integrarán en los directorios `documentation/` y `evidence/`.
+El instalador automatizado está preparado para instalaciones limpias, pero su ejecución integral en un entorno nuevo todavía requiere validación.
+
+Este proyecto constituye un prototipo académico de base de datos distribuida. Sus mecanismos de replicación, consulta y coordinación permiten demostrar los conceptos solicitados, pero no equivalen a una infraestructura de producción con alta disponibilidad, aislamiento completo de sedes y recuperación automática.
