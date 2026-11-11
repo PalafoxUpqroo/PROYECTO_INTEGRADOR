@@ -101,16 +101,72 @@ function Copiar-Y-Ejecutar {
 # FUNCION: VERIFICAR QUE UNA BASE ESTE VACIA
 # ============================================================
 
+
 function Verificar-BaseVacia {
     param($Nodo)
 
     $consulta = @"
-SELECT COUNT(*)
-FROM pg_class c
-JOIN pg_namespace n ON n.oid = c.relnamespace
-WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
-  AND n.nspname NOT LIKE 'pg_toast%'
-  AND c.relkind IN ('r','p','v','f','m','S');
+SELECT
+    (
+        -- Tablas, vistas, secuencias y otros objetos de relacion.
+        SELECT COUNT(*)
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND n.nspname NOT LIKE 'pg_toast%'
+          AND n.nspname NOT LIKE 'pg_temp_%'
+          AND n.nspname NOT LIKE 'pg_toast_temp_%'
+          AND c.relkind IN ('r','p','v','f','m','S')
+    )
+    +
+    (
+        -- Funciones y procedimientos definidos por el usuario.
+        SELECT COUNT(*)
+        FROM pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND n.nspname NOT LIKE 'pg_toast%'
+          AND n.nspname NOT LIKE 'pg_temp_%'
+    )
+    +
+    (
+        -- Tipos definidos por el usuario.
+        SELECT COUNT(*)
+        FROM pg_type t
+        JOIN pg_namespace n ON n.oid = t.typnamespace
+        WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND n.nspname NOT LIKE 'pg_toast%'
+          AND n.nspname NOT LIKE 'pg_temp_%'
+          AND t.typtype IN ('c', 'd', 'e', 'r', 'm')
+          AND t.typcategory <> 'A'
+          AND NOT EXISTS (
+              SELECT 1
+              FROM pg_class c
+              WHERE c.reltype = t.oid
+          )
+    )
+    +
+    (
+        -- Esquemas personalizados.
+        SELECT COUNT(*)
+        FROM pg_namespace n
+        WHERE n.nspname NOT IN ('pg_catalog', 'information_schema', 'public')
+          AND n.nspname NOT LIKE 'pg_toast%'
+          AND n.nspname NOT LIKE 'pg_temp_%'
+          AND n.nspname NOT LIKE 'pg_toast_temp_%'
+    )
+    +
+    (
+        -- Publicaciones logicas.
+        SELECT COUNT(*)
+        FROM pg_publication
+    )
+    +
+    (
+        -- Suscripciones logicas.
+        SELECT COUNT(*)
+        FROM pg_subscription
+    );
 "@
 
     $resultado = docker exec $Nodo.Contenedor psql `
@@ -128,7 +184,7 @@ WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
     $cantidadObjetos = [int]($resultado.Trim())
 
     if ($cantidadObjetos -ne 0) {
-        throw "La base $($Nodo.Base) contiene $cantidadObjetos objetos. Instalacion cancelada."
+        throw "La base $($Nodo.Base) contiene $cantidadObjetos objetos de usuario. Instalacion cancelada."
     }
 
     Write-Host "Base $($Nodo.Base): sin objetos de usuario." -ForegroundColor Green
