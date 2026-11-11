@@ -23,7 +23,7 @@ services:
       - -c
       - archive_mode=on
       - -c
-      - archive_command=test -f /backups/cancun/wal/%f || cp %p /backups/cancun/wal/%f
+      - archive_command=mkdir -p /backups/cancun/wal && (test -f /backups/cancun/wal/%f || cp %p /backups/cancun/wal/%f)
       - -c
       - archive_timeout=60s
     volumes:
