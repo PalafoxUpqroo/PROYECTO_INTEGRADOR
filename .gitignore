@@ -16,3 +16,11 @@ __pycache__/
 
 # Visual Studio Code
 .vscode/
+
+# Dependencias de Node.js
+node_modules/
+
+**/node_modules/
+
+# Archivos temporales de Microsoft Office
+~$*

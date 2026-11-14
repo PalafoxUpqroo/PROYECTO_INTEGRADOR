@@ -1,0 +1,64 @@
+VALIDACIÓN DEL ENTORNO LIMPIO
+Fecha: 13 de noviembre de 2026
+Proyecto: Base de datos distribuida para reservaciones de una cadena hotelera
+
+OBJETIVO
+Comprobar la instalación de principio a fin en una copia aislada, sin modificar
+el entorno original del proyecto.
+
+AISLAMIENTO
+- Carpeta: O:\proyecto-hotelero-distribuido-prueba-limpia
+- Contenedores: hotel-prueba-postgres-cancun, -tulum, -bacalar y -central
+- Puertos: 5641, 5642, 5643 y 5644
+- Red: hotel-prueba-red
+- Volúmenes: proyecto-hotelero-distribuido-prueba-limpia_hotel_prueba_*
+- El entorno original conservó sus contenedores hotel-postgres-* y los
+  puertos 5541-5544.
+
+RESULTADOS DE INSTALACIÓN
+- Instalador ejecutado de principio a fin con estado OK.
+- Cuatro bases creadas.
+- Tres publicaciones, una por sede, con ocho tablas cada una.
+- Tres suscripciones activas en el nodo central.
+- 24 relaciones de suscripción en estado r.
+- 24 tablas externas de FDW en los esquemas remoto_cancun, remoto_tulum y
+  remoto_bacalar.
+- Cero transacciones preparadas pendientes.
+
+DATOS DEMO
+- Cancún: 2 huéspedes, 2 habitaciones, 2 tarifas y 2 reservaciones.
+- Tulum: 2 huéspedes, 2 habitaciones, 1 tarifa y 1 reservación.
+- Bacalar: 1 huésped, 1 habitación, 1 tarifa y 1 reservación.
+- Central replicado: 5 huéspedes, 5 habitaciones, 4 tarifas y 6 reservaciones.
+- La carga se ejecutó dos veces y los conteos no cambiaron.
+
+PRUEBAS
+- Concurrencia: una solicitud aceptada, una rechazada con SQLSTATE 23P01,
+  cero errores inesperados, código de salida 0.
+- 2PC: dos ejecuciones consecutivas con código de salida 0.
+  - Primera reservación: 1feb90f1-b3a7-40ac-ae4c-8377160dfeda
+  - Segunda reservación: c14968ba-10a9-49ce-920e-b61c64beaafc
+  - La segunda quedó en Tulum como evidencia.
+  - Cancún no conserva reservaciones con el marcador de prueba.
+  - Bitácora: DELETE en Cancún e INSERT en Tulum.
+  - Cero transacciones preparadas en los cuatro nodos.
+
+ENTORNO ORIGINAL
+- Cancún: 6 reservaciones, 0 transacciones preparadas.
+- Tulum: 3 reservaciones, 0 transacciones preparadas.
+- Bacalar: 1 reservación, 0 transacciones preparadas.
+- Central: 3 suscripciones, 24 relaciones en estado r y 10 reservaciones.
+
+ARCHIVOS DE EVIDENCIA
+01_contenedores_y_aislamiento.txt
+02_instalador.log
+03_estructura_publicaciones_suscripciones.txt
+04_datos_seed_replicacion.txt
+05_test_concurrencia.txt
+06_test_2pc_ejecucion1.txt
+07_test_2pc_ejecucion2.txt
+08_estado_final_2pc.txt
+09_entorno_original_intacto.txt
+
+Nota: este resumen y los archivos de evidencia no contienen contraseñas,
+contenido del archivo .env ni cadenas de conexión con credenciales.

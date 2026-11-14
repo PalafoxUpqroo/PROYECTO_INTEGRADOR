@@ -1,0 +1,91 @@
+﻿Fecha de evidencia: 2026-11-13T10:30:24.6017968-05:00
+
+--- Publicacion CANCUN ---
+      pubname       | tablas 
+--------------------+--------
+ pub_central_cancun |      8
+(1 row)
+
+       tablename       |                        rowfilter                         
+-----------------------+----------------------------------------------------------
+ habitaciones          | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ huespedes             | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pagos                 | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ reservacion_servicios | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ reservaciones         | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ servicios             | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ tarifas               | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ temporadas            | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+(8 rows)
+
+
+--- Publicacion TULUM ---
+      pubname      | tablas 
+-------------------+--------
+ pub_central_tulum |      8
+(1 row)
+
+       tablename       |                        rowfilter                         
+-----------------------+----------------------------------------------------------
+ habitaciones          | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ huespedes             | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pagos                 | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ reservacion_servicios | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ reservaciones         | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ servicios             | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ tarifas               | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ temporadas            | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+(8 rows)
+
+
+--- Publicacion BACALAR ---
+       pubname       | tablas 
+---------------------+--------
+ pub_central_bacalar |      8
+(1 row)
+
+       tablename       |                        rowfilter                         
+-----------------------+----------------------------------------------------------
+ habitaciones          | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ huespedes             | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pagos                 | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ reservacion_servicios | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ reservaciones         | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ servicios             | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ tarifas               | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ temporadas            | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+(8 rows)
+
+
+--- Suscripciones y FDW en CENTRAL ---
+   subname   | subenabled | subslotname |    subpublications    
+-------------+------------+-------------+-----------------------
+ sub_bacalar | t          | sub_bacalar | {pub_central_bacalar}
+ sub_cancun  | t          | sub_cancun  | {pub_central_cancun}
+ sub_tulum   | t          | sub_tulum   | {pub_central_tulum}
+(3 rows)
+
+   srvname   |                             srvoptions                              
+-------------+---------------------------------------------------------------------
+ fdw_bacalar | {host=hotel-prueba-postgres-bacalar,port=5432,dbname=hotel_bacalar}
+ fdw_cancun  | {host=hotel-prueba-postgres-cancun,port=5432,dbname=hotel_cancun}
+ fdw_tulum   | {host=hotel-prueba-postgres-tulum,port=5432,dbname=hotel_tulum}
+(3 rows)
+
+ foreign_table_schema | tablas 
+----------------------+--------
+ remoto_bacalar       |      8
+ remoto_cancun        |      8
+ remoto_tulum         |      8
+(3 rows)
+
+ estado | count 
+--------+-------
+ r      |    24
+(1 row)
+
+ total_tablas_externas 
+-----------------------
+                    24
+(1 row)
+

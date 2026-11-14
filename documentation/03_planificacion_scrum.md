@@ -38,7 +38,7 @@ Al tratarse de un proyecto individual, una misma persona desempeña los diferent
 | PB-16 | Transacción distribuida 2PC        | Alta      | Traslado de reservación entre sedes.     |
 | PB-17 | Cliente de demostración Python     | Media     | Interfaz de consola operativa.           |
 | PB-18 | Documentación técnica y académica  | Alta      | Informe, manuales y referencias.         |
-| PB-19 | Evidencias y presentación          | Alta      | Material de evaluación y defensa.        |
+| PB-19 | Preparación de la presentación     | Alta      | Material para la defensa del proyecto.   |
 
 ## 3.4 Planificación de sprints
 
@@ -93,31 +93,47 @@ Actividades:
 
 ### Sprint 4. Integración, cliente y documentación
 
-**Objetivo:** integrar las funcionalidades y preparar el producto para su demostración y evaluación.
+**Objetivo:** integrar el cliente Python con los tres nodos operativos, verificar las funcionalidades principales y completar la documentación y los entregables académicos del proyecto.
 
-Actividades:
+**Periodo:** 4 al 11 de noviembre de 2026.
 
-- Desarrollar el cliente de consola en Python.
-- Integrar operaciones de las tres sedes.
-- Implementar reportes consolidados.
-- Probar consultas de disponibilidad y reservaciones.
-- Verificar el funcionamiento del check-in, check-out y cancelación.
-- Revisar los scripts de instalación para entornos limpios.
-- Actualizar README y documentación técnica.
-- Preparar evidencias, informe y presentación.
+**Actividades y estado:**
 
-**Resultado:** producto integrado con cliente de demostración, documentación técnica y preparación de entregables académicos.
+| Actividad                                                 | Estado      |
+| --------------------------------------------------------- | ----------- |
+| Desarrollar el cliente de consola en Python.              | Terminado   |
+| Integrar las operaciones de las tres sedes.               | Terminado   |
+| Implementar reportes consolidados.                        | Terminado   |
+| Probar consultas de disponibilidad y reservaciones.       | Terminado   |
+| Verificar check-in, check-out y cancelación.              | Terminado   |
+| Revisar los scripts de instalación para entornos limpios. | Terminado   |
+| Actualizar README y documentación técnica.                | Terminado   |
+| Preparar evidencias de ejecución.                         | Terminado   |
+| Integrar el informe académico en un único PDF.            | Terminado   |
+| Preparar la presentación final para la defensa.           | Terminado   |
+
+**Resultado:** se cuenta con un cliente Python integrado, operaciones principales verificadas, documentación técnica actualizada y evidencias de ejecución. El instalador se validó de principio a fin en un entorno limpio aislado, el informe académico se integró en un PDF único y la presentación final quedó preparada.
 
 ## 3.5 Seguimiento y control
 
-El avance se puede organizar mediante un tablero Kanban con los siguientes estados:
+Para representar el estado de las actividades del proyecto se utilizó un tablero Kanban con los siguientes estados:
 
 - Por hacer.
 - En progreso.
 - En revisión.
 - Terminado.
 
-Los cambios de estado deben reflejar el avance real de cada actividad. El historial de Git permite identificar las modificaciones y commits asociados al desarrollo.
+El tablero presentado constituye una reconstrucción retrospectiva de la organización y el avance de las actividades. Su contenido se organizó tomando como referencia las funcionalidades implementadas, las pruebas realizadas, los archivos del proyecto y los resultados obtenidos. Por lo tanto, no debe interpretarse como un registro histórico de movimientos realizados diariamente durante el desarrollo.
+
+Los estados asignados representan la situación de las actividades al momento de elaborar esta documentación. El historial de Git se utiliza como evidencia complementaria para consultar modificaciones y commits relacionados con el desarrollo, pero no como registro de los movimientos del tablero Kanban.
+
+### Evidencia del tablero Kanban
+
+La Figura 1 muestra el tablero Kanban elaborado para representar el estado de las actividades del proyecto al 11 de noviembre de 2026. Se incluyen las actividades terminadas, pendientes y en revisión, de acuerdo con el avance documentado del proyecto.
+
+![Tablero Kanban del proyecto](tablero_kanban.png)
+
+_Figura 1. Tablero Kanban del proyecto integrador de base de datos distribuida._
 
 ## 3.6 Seguimiento de avance
 
@@ -136,6 +152,45 @@ Para un seguimiento verificable se propone registrar en cada sprint:
 El porcentaje de avance se calcula mediante:
 
 **Avance (%) = (Elementos completados / Elementos comprometidos) × 100**
+
+### 3.6.1 Burndown Chart
+
+Debido a que no se registraron mediciones diarias durante el desarrollo, se presenta una reconstrucción retrospectiva del avance utilizando como unidad de medida los 19 elementos del Product Backlog. El gráfico compara el trabajo pendiente ideal con el avance reconstruido al cierre de cada sprint y al corte del 11 de noviembre de 2026.
+
+Para esta reconstrucción, los elementos se distribuyeron de la siguiente manera:
+
+- Sprint 1: PB-01 a PB-05 (5 elementos).
+- Sprint 2: PB-06 a PB-10 (5 elementos).
+- Sprint 3: PB-11 a PB-16 (6 elementos).
+- Sprint 4: PB-17 a PB-19 (3 elementos).
+
+Al corte del 11 de noviembre se consideraban completados 17 elementos. Los dos entregables documentales restantes se concluyeron el 13 de noviembre, por lo que el backlog quedó completo.
+
+| Etapa                | Trabajo ideal pendiente | Trabajo reconstruido pendiente |
+| -------------------- | ----------------------: | -----------------------------: |
+| Inicio               |                      19 |                             19 |
+| Cierre Sprint 1      |                   14.25 |                             14 |
+| Cierre Sprint 2      |                    9.50 |                              9 |
+| Cierre Sprint 3      |                    4.75 |                              3 |
+| Corte del 11/11/2026 |                       0 |                              2 |
+
+La línea ideal representa una reducción uniforme del trabajo pendiente. La línea reconstruida representa el avance estimado mediante los elementos del backlog, no mediciones históricas tomadas durante la ejecución.
+
+**Interpretación:** el desarrollo técnico y las pruebas principales se completaron antes de la integración de los entregables académicos. Al corte del 11 de noviembre quedaban dos elementos documentales; ambos se concluyeron el 13 de noviembre con la integración del PDF y la preparación de la presentación.
+
+```mermaid
+xychart-beta
+    title "Burndown Chart reconstruido"
+    x-axis ["Inicio", "Sprint 1", "Sprint 2", "Sprint 3", "Corte 11 nov."]
+    y-axis "Elementos pendientes" 0 --> 20
+    line [19, 14.25, 9.5, 4.75, 0]
+    line [19, 14, 9, 3, 2]
+```
+
+**Leyenda:**
+
+- Primera línea: trabajo ideal pendiente.
+- Segunda línea: trabajo reconstruido pendiente.
 
 ## 3.7 Retrospectivas
 
@@ -167,4 +222,4 @@ Las siguientes retrospectivas son una evaluación retrospectiva del desarrollo, 
 
 ## 3.8 Conclusión de la planificación
 
-La organización por sprints permitió dividir el proyecto en etapas relacionadas con las competencias de la asignatura. La reconstrucción del backlog facilita identificar las funcionalidades desarrolladas, sus dependencias y los resultados que deben demostrarse. Para la entrega final se complementará esta planificación con evidencias de ejecución y el historial de versiones del repositorio.
+La organización por sprints permitió dividir el proyecto en etapas relacionadas con las competencias de la asignatura. La reconstrucción del backlog facilita identificar las funcionalidades desarrolladas, sus dependencias y los resultados que deben demostrarse. Al 13 de noviembre de 2026, el producto, las evidencias técnicas, el informe integrado en PDF y la presentación para la defensa están elaborados. La instalación limpia se validó en un entorno aislado y el entorno original permaneció intacto.

@@ -1,56 +1,52 @@
 
-import os
+import sys
 import uuid
 from datetime import date, datetime
 from getpass import getpass
+from pathlib import Path
 
 import psycopg
 from psycopg.rows import dict_row
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import hotel_config as config  # noqa: E402
 
 
 # =========================================================
 # CONFIGURACION
 # =========================================================
 
-PASSWORD = os.getenv("HOTEL_DB_PASSWORD")
+PASSWORD = (
+    config.obtener("HOTEL_DB_PASSWORD")
+    or config.obtener("POSTGRES_PASSWORD")
+)
 
 if not PASSWORD:
     PASSWORD = getpass("Contrasena de PostgreSQL: ")
 
 
-
 SEDES = {
     "1": {
+        **config.configuracion_nodo("cancun", password=PASSWORD),
         "nombre": "CANCÚN",
-        "host": "127.0.0.1",
-        "port": 5541,
-        "dbname": "hotel_cancun",
         "sede_id": "11111111-1111-4111-8111-111111111111",
     },
     "2": {
+        **config.configuracion_nodo("tulum", password=PASSWORD),
         "nombre": "TULUM",
-        "host": "127.0.0.1",
-        "port": 5542,
-        "dbname": "hotel_tulum",
         "sede_id": "22222222-2222-4222-8222-222222222222",
     },
     "3": {
+        **config.configuracion_nodo("bacalar", password=PASSWORD),
         "nombre": "BACALAR",
-        "host": "127.0.0.1",
-        "port": 5543,
-        "dbname": "hotel_bacalar",
         "sede_id": "33333333-3333-4333-8333-333333333333",
     },
 }
 
 
-CENTRAL = {
-    "host": "127.0.0.1",
-    "port": 5544,
-    "dbname": "hotel_central",
-    "user": "hotel_admin",
-    "password": PASSWORD,
-}
+CENTRAL = config.configuracion_nodo("central", password=PASSWORD)
 
 
 # =========================================================
@@ -300,7 +296,7 @@ def crear_reservacion(conn, sede_id):
           AND tipo_habitacion = %s
           AND activa = TRUE
           AND fecha_inicio <= %s
-          AND fecha_fin >= %s
+          AND fecha_fin >= %s - 1
         ORDER BY precio_noche
         """,
         (

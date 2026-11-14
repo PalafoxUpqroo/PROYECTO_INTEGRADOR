@@ -48,7 +48,8 @@ function Copiar-Y-Ejecutar {
         [string]$Contenedor,
         [string]$Base,
         [string]$Archivo,
-        [switch]$Interactivo
+        [switch]$Interactivo,
+        [string[]]$VariablesEntorno = @()
     )
 
     if (-not (Test-Path $Archivo)) {
@@ -71,6 +72,10 @@ function Copiar-Y-Ejecutar {
 
         if ($Interactivo) {
             $argumentos += @("-it")
+        }
+
+        foreach ($variable in $VariablesEntorno) {
+            $argumentos += @("-e", $variable)
         }
 
         $argumentos += @(
@@ -208,6 +213,19 @@ function Instalar-Grupo {
                 -Archivo $archivo
         }
     }
+}
+
+function Leer-ContrasenaSegura {
+    param(
+        [string]$Mensaje
+    )
+
+    $segura = Read-Host -AsSecureString $Mensaje
+
+    $credencial = New-Object System.Management.Automation.PSCredential `
+        -ArgumentList "hotel_admin", $segura
+
+    return $credencial.GetNetworkCredential().Password
 }
 
 # ============================================================
@@ -351,11 +369,38 @@ for ($i = 0; $i -lt 3; $i++) {
 Write-Host "`n===== 7. CONFIGURACION FDW =====" -ForegroundColor Cyan
 Write-Host "Se solicitara la contrasena para configurar FDW." -ForegroundColor Yellow
 
-Copiar-Y-Ejecutar `
-    -Contenedor $nodoCentral.Contenedor `
-    -Base $nodoCentral.Base `
-    -Archivo ".\database\09_distributed\04_configuracion_fdw_central.sql" `
-    -Interactivo
+$fdwPassword = Leer-ContrasenaSegura "Contrasena para FDW"
+
+if ([string]::IsNullOrWhiteSpace($fdwPassword)) {
+    throw "La contrasena de FDW no puede estar vacia."
+}
+
+$env:FDW_PASSWORD = $fdwPassword
+
+try {
+    Copiar-Y-Ejecutar `
+        -Contenedor $nodoCentral.Contenedor `
+        -Base $nodoCentral.Base `
+        -Archivo ".\database\09_distributed\04_configuracion_fdw_central.sql" `
+        -VariablesEntorno @("FDW_PASSWORD")
+}
+finally {
+    Remove-Item Env:FDW_PASSWORD -ErrorAction SilentlyContinue
+}
+
+Write-Host "`nVerificando la conexion FDW..." -ForegroundColor Yellow
+
+docker exec $nodoCentral.Contenedor psql `
+    -U hotel_admin `
+    -d $nodoCentral.Base `
+    -v ON_ERROR_STOP=1 `
+    -t `
+    -A `
+    -c "SELECT 'FDW OK: ' || COUNT(*) FROM remoto_cancun.reservaciones;"
+
+if ($LASTEXITCODE -ne 0) {
+    throw "La conexion FDW fallo. Verifique la contrasena."
+}
 
 # ============================================================
 # 8. CREAR SUSCRIPCIONES LOGICAS
@@ -364,11 +409,24 @@ Copiar-Y-Ejecutar `
 Write-Host "`n===== 8. SUSCRIPCIONES LOGICAS =====" -ForegroundColor Cyan
 Write-Host "Se solicitara la contrasena de replicacion." -ForegroundColor Yellow
 
-Copiar-Y-Ejecutar `
-    -Contenedor $nodoCentral.Contenedor `
-    -Base $nodoCentral.Base `
-    -Archivo ".\database\09_distributed\05_suscripciones_central.sql" `
-    -Interactivo
+$replicationPassword = Leer-ContrasenaSegura "Contrasena de replicacion"
+
+if ([string]::IsNullOrWhiteSpace($replicationPassword)) {
+    throw "La contrasena de replicacion no puede estar vacia."
+}
+
+$env:REPLICATION_PASSWORD = $replicationPassword
+
+try {
+    Copiar-Y-Ejecutar `
+        -Contenedor $nodoCentral.Contenedor `
+        -Base $nodoCentral.Base `
+        -Archivo ".\database\09_distributed\05_suscripciones_central.sql" `
+        -VariablesEntorno @("REPLICATION_PASSWORD")
+}
+finally {
+    Remove-Item Env:REPLICATION_PASSWORD -ErrorAction SilentlyContinue
+}
 
 # ============================================================
 # FINALIZACION

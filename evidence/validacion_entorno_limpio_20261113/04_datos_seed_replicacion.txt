@@ -1,0 +1,79 @@
+﻿Fecha de evidencia: 2026-11-13T10:30:31.9245768-05:00
+
+--- Datos en CANCUN ---
+ huespedes | habitaciones | tarifas | reservaciones | esp_huesped_individual | esp_huesped_corporativo | esp_habitacion_estandar | esp_habitacion_suite 
+-----------+--------------+---------+---------------+------------------------+-------------------------+-------------------------+----------------------
+         2 |            2 |       2 |             3 |                      1 |                       1 |                       1 |                    1
+(1 row)
+
+            reservacion_id            | fecha_entrada | fecha_salida |   estado   |  total  |       observaciones        
+--------------------------------------+---------------+--------------+------------+---------+----------------------------
+ 7c25cd98-321e-454d-8d97-9b253070de0f | 2026-11-14    | 2026-11-16   | CONFIRMADA | 2400.00 | PRUEBA_CONCURRENCIA_HILO_2
+ d0000000-0000-4000-8000-000000000001 | 2027-06-10    | 2027-06-13   | CONFIRMADA | 3600.00 | DEMO_SEED_CANCUN
+ d0000000-0000-4000-8000-000000000004 | 2027-09-10    | 2027-09-12   | CONFIRMADA | 5000.00 | DEMO_SEED_CANCUN_SUITE
+(3 rows)
+
+
+--- Datos en TULUM ---
+ huespedes | habitaciones | tarifas | reservaciones | esp_huesped_individual | esp_huesped_corporativo | esp_habitacion_estandar | esp_habitacion_suite 
+-----------+--------------+---------+---------------+------------------------+-------------------------+-------------------------+----------------------
+         2 |            2 |       1 |             2 |                      2 |                       0 |                       2 |                    0
+(1 row)
+
+            reservacion_id            | fecha_entrada | fecha_salida |   estado   |  total  |           observaciones            
+--------------------------------------+---------------+--------------+------------+---------+------------------------------------
+ c14968ba-10a9-49ce-920e-b61c64beaafc | 2027-03-01    | 2027-03-03   | CONFIRMADA | 2400.00 | PRUEBA_2PC_AUTOMATICA_a989c845f7af
+ d0000000-0000-4000-8000-000000000002 | 2027-07-01    | 2027-07-04   | CONFIRMADA | 3600.00 | DEMO_SEED_TULUM
+(2 rows)
+
+
+--- Datos en BACALAR ---
+ huespedes | habitaciones | tarifas | reservaciones | esp_huesped_individual | esp_huesped_corporativo | esp_habitacion_estandar | esp_habitacion_suite 
+-----------+--------------+---------+---------------+------------------------+-------------------------+-------------------------+----------------------
+         1 |            1 |       1 |             1 |                      1 |                       0 |                       1 |                    0
+(1 row)
+
+            reservacion_id            | fecha_entrada | fecha_salida |   estado   |  total  |   observaciones   
+--------------------------------------+---------------+--------------+------------+---------+-------------------
+ d0000000-0000-4000-8000-000000000003 | 2027-08-01    | 2027-08-04   | CONFIRMADA | 3600.00 | DEMO_SEED_BACALAR
+(1 row)
+
+
+--- Replicacion y vista consolidada en CENTRAL ---
+ huespedes | habitaciones | tarifas | reservaciones 
+-----------+--------------+---------+---------------
+         5 |            5 |       4 |             6
+(1 row)
+
+  sede   |            reservacion_id            | fecha_entrada | fecha_salida |   estado   |  total  |           observaciones            
+---------+--------------------------------------+---------------+--------------+------------+---------+------------------------------------
+ BACALAR | d0000000-0000-4000-8000-000000000003 | 2027-08-01    | 2027-08-04   | CONFIRMADA | 3600.00 | DEMO_SEED_BACALAR
+ CANCUN  | 7c25cd98-321e-454d-8d97-9b253070de0f | 2026-11-14    | 2026-11-16   | CONFIRMADA | 2400.00 | PRUEBA_CONCURRENCIA_HILO_2
+ CANCUN  | d0000000-0000-4000-8000-000000000001 | 2027-06-10    | 2027-06-13   | CONFIRMADA | 3600.00 | DEMO_SEED_CANCUN
+ CANCUN  | d0000000-0000-4000-8000-000000000004 | 2027-09-10    | 2027-09-12   | CONFIRMADA | 5000.00 | DEMO_SEED_CANCUN_SUITE
+ TULUM   | c14968ba-10a9-49ce-920e-b61c64beaafc | 2027-03-01    | 2027-03-03   | CONFIRMADA | 2400.00 | PRUEBA_2PC_AUTOMATICA_a989c845f7af
+ TULUM   | d0000000-0000-4000-8000-000000000002 | 2027-07-01    | 2027-07-04   | CONFIRMADA | 3600.00 | DEMO_SEED_TULUM
+(6 rows)
+
+ total_vista 
+-------------
+           6
+(1 row)
+
+
+--- Disponibilidad ---
+ disponibles_cancun 
+--------------------
+                  2
+(1 row)
+
+ disponibles_tulum 
+-------------------
+                 2
+(1 row)
+
+ disponibles_bacalar 
+---------------------
+                   1
+(1 row)
+

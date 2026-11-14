@@ -12,7 +12,7 @@ La aplicación funciona desde una consola y se conecta a las bases de datos Post
 - Contenedores del proyecto en ejecución.
 - Python 3.10 o superior.
 - Dependencias instaladas.
-- Variable de entorno `HOTEL_DB_PASSWORD` configurada.
+- Contraseña de PostgreSQL disponible mediante la variable de entorno HOTEL_DB_PASSWORD. Si no está configurada, el cliente solicita la contraseña directamente en la consola.
 
 ## 5.3 Inicio de la aplicación
 

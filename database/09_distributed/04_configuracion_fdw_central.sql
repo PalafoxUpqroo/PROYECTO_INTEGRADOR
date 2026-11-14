@@ -4,13 +4,20 @@
 -- Conecta el nodo central con Cancun, Tulum y Bacalar.
 -- Importa 8 tablas remotas por sede (24 en total).
 --
--- Requiere ejecutar con psql de forma interactiva.
--- Solicita la contraseña sin mostrarla ni almacenarla en el archivo.
+-- La contraseña se recibe por la variable de entorno FDW_PASSWORD.
+-- El instalador la solicita de forma interactiva y segura; no se
+-- almacena en este archivo ni en el historial de psql.
 -- ============================================================
 
 \set ON_ERROR_STOP on
 
-\prompt -s 'Contrasena para FDW: ' fdw_password
+\getenv fdw_password FDW_PASSWORD
+
+\if :{?fdw_password}
+\else
+    \echo 'ERROR: defina la variable de entorno FDW_PASSWORD.'
+    DO $$ BEGIN RAISE EXCEPTION 'FDW_PASSWORD no definida'; END $$;
+\endif
 
 -- 1. Extension para conexiones a bases de datos externas.
 

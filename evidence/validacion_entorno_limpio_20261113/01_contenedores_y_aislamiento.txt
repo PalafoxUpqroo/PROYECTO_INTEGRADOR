@@ -1,0 +1,35 @@
+﻿Fecha de evidencia: 2026-11-13T10:30:18.7840671-05:00
+
+--- Contenedores del entorno aislado ---
+hotel-prueba-postgres-bacalar	Up 4 minutes	0.0.0.0:5643->5432/tcp, [::]:5643->5432/tcp
+hotel-prueba-postgres-cancun	Up 4 minutes	0.0.0.0:5641->5432/tcp, [::]:5641->5432/tcp
+hotel-prueba-postgres-central	Up 4 minutes	0.0.0.0:5644->5432/tcp, [::]:5644->5432/tcp
+hotel-prueba-postgres-tulum	Up 4 minutes	0.0.0.0:5642->5432/tcp, [::]:5642->5432/tcp
+
+--- Contenedores del entorno original (sin cambios) ---
+hotel-postgres-cancun	Up 59 minutes	0.0.0.0:5541->5432/tcp, [::]:5541->5432/tcp
+hotel-postgres-bacalar	Up 59 minutes	0.0.0.0:5543->5432/tcp, [::]:5543->5432/tcp
+hotel-postgres-central	Up 59 minutes	0.0.0.0:5544->5432/tcp, [::]:5544->5432/tcp
+hotel-postgres-tulum	Up 59 minutes	0.0.0.0:5542->5432/tcp, [::]:5542->5432/tcp
+
+--- Red y volumenes aislados ---
+hotel-prueba-red
+proyecto-hotelero-distribuido-prueba-limpia_hotel_prueba_bacalar_data
+proyecto-hotelero-distribuido-prueba-limpia_hotel_prueba_cancun_data
+proyecto-hotelero-distribuido-prueba-limpia_hotel_prueba_central_data
+proyecto-hotelero-distribuido-prueba-limpia_hotel_prueba_tulum_data
+
+--- Puertos en escucha ---
+
+LocalAddress LocalPort
+------------ ---------
+::1               5641
+::                5641
+::1               5642
+::                5642
+::1               5643
+::                5643
+::1               5644
+::                5644
+
+

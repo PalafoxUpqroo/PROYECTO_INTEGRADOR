@@ -48,17 +48,20 @@ proyecto-hotelero-distribuido/
 │   ├── 06_views/
 │   ├── 07_indexes/
 │   ├── 08_partitions/
-│   └── 09_distributed/
+│   ├── 09_distributed/
+│   └── 10_seed/
 ├── docker/
 │   └── init/
 ├── python/
 │   ├── client/
 │   │   └── main.py
 │   ├── generators/
+│   ├── hotel_config.py
 │   └── tests/
 │       ├── test_2pc.py
 │       └── test_concurrencia.py
 ├── scripts/
+│   ├── cargar_datos_demo.ps1
 │   └── instalar_proyecto.ps1
 ├── backups/
 ├── documentation/
@@ -103,6 +106,23 @@ $env:HOTEL_DB_PASSWORD = "TU_CONTRASEÑA_SEGURA"
 
 El valor debe coincidir con `POSTGRES_PASSWORD`.
 
+El cliente y las pruebas cargan primero las variables de entorno y, si no existen, los valores del archivo `.env`. Los puertos predeterminados son los del entorno original: Cancún `5541`, Tulum `5542`, Bacalar `5543` y Central `5544`.
+
+Para ejecutar contra una copia aislada sin modificar el código, se pueden definir estas variables en la sesión de PowerShell:
+
+```powershell
+$env:HOTEL_DB_HOST = "127.0.0.1"
+$env:HOTEL_DB_PORT_CANCUN = "5641"
+$env:HOTEL_DB_PORT_TULUM = "5642"
+$env:HOTEL_DB_PORT_BACALAR = "5643"
+$env:HOTEL_DB_PORT_CENTRAL = "5644"
+$env:HOTEL_DB_USER = "hotel_admin"
+$env:HOTEL_ENV_NAME = "prueba-limpia"
+$env:HOTEL_EXPECTED_ENV = "prueba-limpia"
+```
+
+`HOTEL_EXPECTED_ENV` es opcional y funciona como protección: si `HOTEL_ENV_NAME` no coincide, los scripts se detienen antes de conectarse. La contraseña se toma de `HOTEL_DB_PASSWORD` o de `POSTGRES_PASSWORD`; nunca se imprime en los mensajes.
+
 ### 5.2 Instalar dependencias Python
 
 Desde la raíz del proyecto:
@@ -129,7 +149,9 @@ El instalador está diseñado para bases de datos nuevas y vacías. Comprueba qu
 
 **No ejecutar el instalador sobre bases de datos que ya contienen información del proyecto.** No es un actualizador ni un mecanismo para reconstruir una instalación existente.
 
-El instalador fue revisado, pero todavía no se ha validado de principio a fin en un entorno limpio independiente. Por ello, su ejecución en una instalación nueva requiere verificar los resultados de cada etapa.
+El instalador fue validado de principio a fin el 13 de noviembre de 2026 en una copia aislada del proyecto (`proyecto-hotelero-distribuido-prueba-limpia`). Esa copia utilizó contenedores `hotel-prueba-postgres-*`, puertos `5641`–`5644`, la red `hotel-prueba-red` y volúmenes propios, sin modificar el entorno original. La validación creó las cuatro bases, tres publicaciones, tres suscripciones, 24 relaciones de suscripción en estado `r` y 24 tablas externas de FDW. Las evidencias se encuentran en `evidence/validacion_entorno_limpio_20261113/`.
+
+La instalación estructural no carga datos de demostración. Después de instalar y comprobar la replicación, los datos demo se cargan con un paso independiente (sección 6.5).
 
 ### 6.2 Levantar los cuatro nodos
 
@@ -160,9 +182,35 @@ En una instalación nueva, ejecutar:
 
 El instalador solicita confirmación antes de proceder. También realiza comprobaciones de los contenedores, las bases de datos y los archivos SQL necesarios.
 
-Durante la configuración de las conexiones distribuidas pueden solicitarse datos de conexión mediante la terminal.
+Durante la configuración de las conexiones distribuidas se solicitan las contraseñas de FDW y de replicación. La captura se realiza con `Read-Host -AsSecureString`; los valores se pasan a `psql` únicamente mediante variables de entorno temporales y se eliminan al terminar. No se escriben en el repositorio, en los scripts SQL ni en la línea de comandos.
 
-Al finalizar, se deben revisar los mensajes de instalación y verificar que los objetos y las conexiones se hayan creado correctamente.
+Antes de crear las suscripciones, el instalador comprueba la conectividad de los servidores FDW. Al finalizar, se deben revisar los mensajes y verificar que las publicaciones, suscripciones y tablas externas se hayan creado correctamente.
+
+### 6.4 Verificar la instalación
+
+Comprobar los contenedores y las relaciones de replicación:
+
+```powershell
+docker compose ps
+docker exec hotel-postgres-central psql -U hotel_admin -d hotel_central -c "SELECT subname, subenabled FROM pg_subscription ORDER BY subname;"
+docker exec hotel-postgres-central psql -U hotel_admin -d hotel_central -c "SELECT srsubstate::text AS estado, COUNT(*) FROM pg_subscription_rel GROUP BY srsubstate;"
+```
+
+El estado esperado es `r` para las 24 relaciones de suscripción. También se pueden contar las tablas externas:
+
+```powershell
+docker exec hotel-postgres-central psql -U hotel_admin -d hotel_central -c "SELECT COUNT(*) FROM information_schema.foreign_tables WHERE foreign_table_schema LIKE 'remoto_%';"
+```
+
+### 6.5 Cargar datos de demostración
+
+La carga de datos demo es un paso separado de la instalación estructural. Debe ejecutarse después de crear las publicaciones y suscripciones para que los datos se repliquen al nodo central:
+
+```powershell
+.\scripts\cargar_datos_demo.ps1 -ConfirmarCargaDemo
+```
+
+El script carga datos en Cancún, Tulum y Bacalar. Es idempotente: puede ejecutarse nuevamente sin duplicar registros porque utiliza identificadores fijos y actualizaciones controladas. Al finalizar, el nodo central debe recibir los datos mediante replicación lógica.
 
 ## 7. Organización de los scripts SQL
 
@@ -179,6 +227,7 @@ Los scripts están separados por responsabilidad:
 | `07_indexes`     | Índices de optimización y elementos para pruebas de rendimiento.                                 |
 | `08_partitions`  | Particionamiento de reservaciones y tablas auxiliares centrales.                                 |
 | `09_distributed` | Publicaciones de replicación, configuración FDW y suscripciones.                                 |
+| `10_seed`        | Datos de demostración idempotentes para las tres sedes.                                          |
 
 El instalador organiza la ejecución de los scripts en los nodos correspondientes. No es necesario ejecutar manualmente cada archivo SQL cuando se realiza una instalación limpia mediante el instalador.
 
@@ -274,13 +323,15 @@ python/tests/test_concurrencia.py
 
 Utiliza dos hilos y conexiones independientes para intentar reservar simultáneamente una misma habitación y periodo.
 
+La prueba busca un periodo disponible para la habitación configurada y requiere que existan los registros de sede, huésped, habitación y tarifa utilizados por el script. Antes de ejecutar, elimina las reservaciones identificadas con el marcador `PRUEBA_CONCURRENCIA_` para no acumular datos de ejecuciones anteriores.
+
 El resultado comprobado fue:
 
 - Una reservación aceptada.
 - Una reservación rechazada por la restricción de exclusión GiST.
 - Ninguna sobreventa de la habitación.
 
-La operación rechazada produjo el código SQLSTATE `23P01`, correspondiente a una violación de restricción de exclusión.
+La operación rechazada produjo el código SQLSTATE `23P01`, correspondiente a una violación de restricción de exclusión. La prueba se ejecutó satisfactoriamente en tres ocasiones en el entorno original y volvió a pasar en el entorno limpio aislado.
 
 Ejecutar:
 
@@ -296,12 +347,14 @@ Archivo:
 python/tests/test_2pc.py
 ```
 
-Comprueba el traslado de una reservación entre Cancún y Tulum mediante:
+La prueba crea su propia reservación en Cancún, captura su identificador y la traslada a Tulum mediante:
 
 - `PREPARE TRANSACTION`.
-- `COMMIT PREPARED`.
+- `COMMIT PREPARED` o `ROLLBACK PREPARED` según el resultado de la fase de preparación.
 
-La prueba comprobó que la reservación dejó de existir en el nodo de origen, se conservó en el nodo de destino con la misma identificación y no quedaron transacciones preparadas pendientes.
+Las reservaciones creadas por ejecuciones anteriores se identifican con el marcador `PRUEBA_2PC_AUTOMATICA` y se eliminan al inicio. Por ello, la prueba puede ejecutarse repetidamente sin editar identificadores. Al finalizar, deja la última reservación trasladada en Tulum como evidencia y comprueba que no queden transacciones preparadas pendientes en los nodos participantes.
+
+La prueba comprobó que la reservación dejó de existir en el nodo de origen, se conservó en el nodo de destino con la misma identificación, la bitácora registró `DELETE` en Cancún e `INSERT` en Tulum, y no quedaron transacciones preparadas pendientes. Se ejecutó dos veces consecutivas con identificadores distintos y código de salida `0` en el entorno limpio aislado.
 
 Ejecutar:
 
@@ -309,7 +362,17 @@ Ejecutar:
 python .\python\tests\test_2pc.py
 ```
 
-Estas pruebas utilizan conexiones y datos de las instancias del proyecto. Antes de ejecutarlas en una instalación nueva, se deben revisar sus datos de prueba y requisitos. No deben ejecutarse sobre bases de datos de producción.
+La variable opcional `HOTEL_2PC_RESERVACION_ID` permite usar una reservación existente en Cancún en lugar de crear una nueva. Este modo es manual y solo debe utilizarse con una reservación que no haya sido trasladada.
+
+**Consideraciones para ejecutar las pruebas:**
+
+La prueba de concurrencia requiere que existan previamente los registros de sede, huésped, habitación y tarifa utilizados por el script.
+
+La prueba 2PC requiere una configuración válida de Cancún y Tulum. El modo automático no necesita preparar datos manualmente; el modo con `HOTEL_2PC_RESERVACION_ID` sí requiere una reservación existente y no trasladada.
+
+Ambas pruebas devuelven código de salida `0` cuando el resultado es correcto y `1` cuando fallan. Esto permite integrarlas en verificaciones automatizadas.
+
+Estas pruebas deben ejecutarse únicamente en el entorno destinado al proyecto, nunca sobre bases de datos de producción.
 
 ## 11. Optimización y rendimiento
 
@@ -414,9 +477,10 @@ El proyecto cuenta con los siguientes componentes implementados y probados:
 - Particionamiento central.
 - Replicación lógica desde las tres sedes.
 - Consultas distribuidas mediante FDW.
-- Traslado de reservaciones mediante 2PC.
+- Traslado de reservaciones mediante 2PC automatizado.
 - Cliente Python de demostración.
+- Instalador validado en un entorno limpio aislado, con datos demo, replicación y pruebas de concurrencia y 2PC.
 
-El instalador automatizado está preparado para instalaciones limpias, pero su ejecución integral en un entorno nuevo todavía requiere validación.
+El instalador automatizado fue ejecutado de principio a fin en una copia aislada y sus resultados se verificaron sin modificar el entorno original. Las evidencias están en `evidence/validacion_entorno_limpio_20261113/`.
 
 Este proyecto constituye un prototipo académico de base de datos distribuida. Sus mecanismos de replicación, consulta y coordinación permiten demostrar los conceptos solicitados, pero no equivalen a una infraestructura de producción con alta disponibilidad, aislamiento completo de sedes y recuperación automática.

@@ -1,0 +1,840 @@
+﻿**********************
+Inicio de la transcripción de Windows PowerShell
+Hora de inicio: 20261113102552
+Nombre de usuario: PADDINGTON\Palafox
+Usuario RunAs: PADDINGTON\Palafox
+Nombre de la configuración: 
+Máquina: PADDINGTON (Microsoft Windows NT 10.0.22631.0)
+Aplicación host: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NoExit -File C:\Users\Palafox\AppData\Local\Temp\opencode\ejecutar_instalador_prueba.ps1
+Id. de proceso: 16784
+PSVersion: 5.1.22621.6133
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.22621.6133
+BuildVersion: 10.0.22621.6133
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+
+========================================
+ INSTALADOR - BASE DE DATOS HOTELERA
+ PostgreSQL 18.6
+========================================
+
+===== 1. COMPROBANDO CONTENEDORES =====
+Cancun: activo.
+Tulum: activo.
+Bacalar: activo.
+Central: activo.
+
+===== 2. COMPROBANDO BASES DE DATOS =====
+
+Comprobando Cancun...
+Base hotel_cancun: sin objetos de usuario.
+
+Comprobando Tulum...
+Base hotel_tulum: sin objetos de usuario.
+
+Comprobando Bacalar...
+Base hotel_bacalar: sin objetos de usuario.
+
+Comprobando Central...
+Base hotel_central: sin objetos de usuario.
+
+Las cuatro bases estan vacias.
+
+===== 3. ESTRUCTURA COMUN =====
+
+Ejecutando: .\database\01_extensions\01_extensions.sql
+Successfully copied 215B (transferred 2.05kB) to hotel-prueba-postgres-cancun:/tmp/01_extensions.sql
+CREATE EXTENSION
+
+
+Ejecutando: .\database\02_types\01_types.sql
+Successfully copied 692B (transferred 2.56kB) to hotel-prueba-postgres-cancun:/tmp/01_types.sql
+DO
+DO
+
+
+Ejecutando: .\database\03_tables\01_sedes.sql
+Successfully copied 725B (transferred 2.56kB) to hotel-prueba-postgres-cancun:/tmp/01_sedes.sql
+CREATE TABLE
+INSERT 0 3
+
+
+Ejecutando: .\database\03_tables\02_huespedes.sql
+Successfully copied 783B (transferred 2.56kB) to hotel-prueba-postgres-cancun:/tmp/02_huespedes.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\03_habitaciones.sql
+Successfully copied 1.16kB (transferred 3.07kB) to hotel-prueba-postgres-cancun:/tmp/03_habitaciones.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\04_inheritance.sql
+Successfully copied 2.8kB (transferred 4.61kB) to hotel-prueba-postgres-cancun:/tmp/04_inheritance.sql
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+
+
+Ejecutando: .\database\03_tables\05_tarifas_temporadas.sql
+Successfully copied 2.13kB (transferred 4.1kB) to hotel-prueba-postgres-cancun:/tmp/05_tarifas_temporadas.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+
+
+Ejecutando: .\database\01_extensions\01_extensions.sql
+Successfully copied 215B (transferred 2.05kB) to hotel-prueba-postgres-tulum:/tmp/01_extensions.sql
+CREATE EXTENSION
+
+
+Ejecutando: .\database\02_types\01_types.sql
+Successfully copied 692B (transferred 2.56kB) to hotel-prueba-postgres-tulum:/tmp/01_types.sql
+DO
+DO
+
+
+Ejecutando: .\database\03_tables\01_sedes.sql
+Successfully copied 725B (transferred 2.56kB) to hotel-prueba-postgres-tulum:/tmp/01_sedes.sql
+CREATE TABLE
+INSERT 0 3
+
+
+Ejecutando: .\database\03_tables\02_huespedes.sql
+Successfully copied 783B (transferred 2.56kB) to hotel-prueba-postgres-tulum:/tmp/02_huespedes.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\03_habitaciones.sql
+Successfully copied 1.16kB (transferred 3.07kB) to hotel-prueba-postgres-tulum:/tmp/03_habitaciones.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\04_inheritance.sql
+Successfully copied 2.8kB (transferred 4.61kB) to hotel-prueba-postgres-tulum:/tmp/04_inheritance.sql
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+
+
+Ejecutando: .\database\03_tables\05_tarifas_temporadas.sql
+Successfully copied 2.13kB (transferred 4.1kB) to hotel-prueba-postgres-tulum:/tmp/05_tarifas_temporadas.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+
+
+Ejecutando: .\database\01_extensions\01_extensions.sql
+Successfully copied 215B (transferred 2.05kB) to hotel-prueba-postgres-bacalar:/tmp/01_extensions.sql
+CREATE EXTENSION
+
+
+Ejecutando: .\database\02_types\01_types.sql
+Successfully copied 692B (transferred 2.56kB) to hotel-prueba-postgres-bacalar:/tmp/01_types.sql
+DO
+DO
+
+
+Ejecutando: .\database\03_tables\01_sedes.sql
+Successfully copied 725B (transferred 2.56kB) to hotel-prueba-postgres-bacalar:/tmp/01_sedes.sql
+CREATE TABLE
+INSERT 0 3
+
+
+Ejecutando: .\database\03_tables\02_huespedes.sql
+Successfully copied 783B (transferred 2.56kB) to hotel-prueba-postgres-bacalar:/tmp/02_huespedes.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\03_habitaciones.sql
+Successfully copied 1.16kB (transferred 3.07kB) to hotel-prueba-postgres-bacalar:/tmp/03_habitaciones.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\04_inheritance.sql
+Successfully copied 2.8kB (transferred 4.61kB) to hotel-prueba-postgres-bacalar:/tmp/04_inheritance.sql
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+
+
+Ejecutando: .\database\03_tables\05_tarifas_temporadas.sql
+Successfully copied 2.13kB (transferred 4.1kB) to hotel-prueba-postgres-bacalar:/tmp/05_tarifas_temporadas.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+
+
+Ejecutando: .\database\01_extensions\01_extensions.sql
+Successfully copied 215B (transferred 2.05kB) to hotel-prueba-postgres-central:/tmp/01_extensions.sql
+CREATE EXTENSION
+
+
+Ejecutando: .\database\02_types\01_types.sql
+Successfully copied 692B (transferred 2.56kB) to hotel-prueba-postgres-central:/tmp/01_types.sql
+DO
+DO
+
+
+Ejecutando: .\database\03_tables\01_sedes.sql
+Successfully copied 725B (transferred 2.56kB) to hotel-prueba-postgres-central:/tmp/01_sedes.sql
+CREATE TABLE
+INSERT 0 3
+
+
+Ejecutando: .\database\03_tables\02_huespedes.sql
+Successfully copied 783B (transferred 2.56kB) to hotel-prueba-postgres-central:/tmp/02_huespedes.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\03_habitaciones.sql
+Successfully copied 1.16kB (transferred 3.07kB) to hotel-prueba-postgres-central:/tmp/03_habitaciones.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\03_tables\04_inheritance.sql
+Successfully copied 2.8kB (transferred 4.61kB) to hotel-prueba-postgres-central:/tmp/04_inheritance.sql
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+
+
+Ejecutando: .\database\03_tables\05_tarifas_temporadas.sql
+Successfully copied 2.13kB (transferred 4.1kB) to hotel-prueba-postgres-central:/tmp/05_tarifas_temporadas.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+
+
+===== 4. ESTRUCTURA OPERATIVA =====
+
+Ejecutando: .\database\03_tables\06_reservaciones_pagos_servicios.sql
+Successfully copied 7.16kB (transferred 8.7kB) to hotel-prueba-postgres-cancun:/tmp/06_reservaciones_pagos_servicios.sql
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\04_functions\01_reservaciones.sql
+Successfully copied 11.3kB (transferred 12.8kB) to hotel-prueba-postgres-cancun:/tmp/01_reservaciones.sql
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\01_bitacora.sql
+Successfully copied 2.3kB (transferred 4.1kB) to hotel-prueba-postgres-cancun:/tmp/01_bitacora.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\02_triggers_auditoria.sql
+Successfully copied 2.17kB (transferred 4.1kB) to hotel-prueba-postgres-cancun:/tmp/02_triggers_auditoria.sql
+psql:/tmp/02_triggers_auditoria.sql:9: NOTICE:  trigger "trg_auditoria_huespedes" for relation "huespedes" does not exis
+t, skipping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:18: NOTICE:  trigger "trg_auditoria_habitaciones" for relation "habitaciones" does n
+ot exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:27: NOTICE:  trigger "trg_auditoria_tarifas" for relation "tarifas" does not exist,
+skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:36: NOTICE:  trigger "trg_auditoria_temporadas" for relation "temporadas" does not e
+xist, skipping
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:45: NOTICE:  trigger "trg_auditoria_reservaciones" for relation "reservaciones" does
+ not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:54: NOTICE:  trigger "trg_auditoria_pagos" for relation "pagos" does not exist, skip
+ping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:63: NOTICE:  trigger "trg_auditoria_servicios" for relation "servicios" does not exi
+st, skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:73: NOTICE:  trigger "trg_auditoria_reservacion_servicios" for relation "reservacion
+_servicios" does not exist, skipping
+CREATE TRIGGER
+
+
+Ejecutando: .\database\05_triggers\03_triggers_totales.sql
+Successfully copied 7.94kB (transferred 9.73kB) to hotel-prueba-postgres-cancun:/tmp/03_triggers_totales.sql
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:172: NOTICE:  trigger "trg_validar_detalle_servicio" for relation "reservacion_servici
+os" does not exist, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:180: NOTICE:  trigger "trg_recalcular_total_servicios" for relation "reservacion_servi
+cios" does not exist, skipping
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:276: NOTICE:  trigger "trg_validar_pago" for relation "pagos" does not exist, skipping
+CREATE TRIGGER
+psql:/tmp/03_triggers_totales.sql:284: NOTICE:  trigger "trg_recalcular_total_pagado" for relation "pagos" does not exis
+t, skipping
+DROP TRIGGER
+CREATE TRIGGER
+
+
+Ejecutando: .\database\06_views\01_vistas_operativas.sql
+Successfully copied 2.61kB (transferred 4.61kB) to hotel-prueba-postgres-cancun:/tmp/01_vistas_operativas.sql
+CREATE VIEW
+CREATE VIEW
+CREATE VIEW
+
+
+Ejecutando: .\database\07_indexes\01_indices_optimizacion.sql
+Successfully copied 676B (transferred 2.56kB) to hotel-prueba-postgres-cancun:/tmp/01_indices_optimizacion.sql
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+ANALYZE
+
+
+Ejecutando: .\database\03_tables\06_reservaciones_pagos_servicios.sql
+Successfully copied 7.16kB (transferred 8.7kB) to hotel-prueba-postgres-tulum:/tmp/06_reservaciones_pagos_servicios.sql
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\04_functions\01_reservaciones.sql
+Successfully copied 11.3kB (transferred 12.8kB) to hotel-prueba-postgres-tulum:/tmp/01_reservaciones.sql
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\01_bitacora.sql
+Successfully copied 2.3kB (transferred 4.1kB) to hotel-prueba-postgres-tulum:/tmp/01_bitacora.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\02_triggers_auditoria.sql
+Successfully copied 2.17kB (transferred 4.1kB) to hotel-prueba-postgres-tulum:/tmp/02_triggers_auditoria.sql
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:9: NOTICE:  trigger "trg_auditoria_huespedes" for relation "huespedes" does not exis
+t, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:18: NOTICE:  trigger "trg_auditoria_habitaciones" for relation "habitaciones" does n
+ot exist, skipping
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:27: NOTICE:  trigger "trg_auditoria_tarifas" for relation "tarifas" does not exist,
+skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:36: NOTICE:  trigger "trg_auditoria_temporadas" for relation "temporadas" does not e
+xist, skipping
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:45: NOTICE:  trigger "trg_auditoria_reservaciones" for relation "reservaciones" does
+ not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:54: NOTICE:  trigger "trg_auditoria_pagos" for relation "pagos" does not exist, skip
+ping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:63: NOTICE:  trigger "trg_auditoria_servicios" for relation "servicios" does not exi
+st, skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:73: NOTICE:  trigger "trg_auditoria_reservacion_servicios" for relation "reservacion
+_servicios" does not exist, skipping
+CREATE TRIGGER
+
+
+Ejecutando: .\database\05_triggers\03_triggers_totales.sql
+Successfully copied 7.94kB (transferred 9.73kB) to hotel-prueba-postgres-tulum:/tmp/03_triggers_totales.sql
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:172: NOTICE:  trigger "trg_validar_detalle_servicio" for relation "reservacion_servici
+os" does not exist, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:180: NOTICE:  trigger "trg_recalcular_total_servicios" for relation "reservacion_servi
+cios" does not exist, skipping
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+psql:/tmp/03_triggers_totales.sql:276: NOTICE:  trigger "trg_validar_pago" for relation "pagos" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:284: NOTICE:  trigger "trg_recalcular_total_pagado" for relation "pagos" does not exis
+t, skipping
+CREATE TRIGGER
+
+
+Ejecutando: .\database\06_views\01_vistas_operativas.sql
+Successfully copied 2.61kB (transferred 4.61kB) to hotel-prueba-postgres-tulum:/tmp/01_vistas_operativas.sql
+CREATE VIEW
+CREATE VIEW
+CREATE VIEW
+
+
+Ejecutando: .\database\07_indexes\01_indices_optimizacion.sql
+Successfully copied 676B (transferred 2.56kB) to hotel-prueba-postgres-tulum:/tmp/01_indices_optimizacion.sql
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+ANALYZE
+
+
+Ejecutando: .\database\03_tables\06_reservaciones_pagos_servicios.sql
+Successfully copied 7.16kB (transferred 8.7kB) to hotel-prueba-postgres-bacalar:/tmp/06_reservaciones_pagos_servicios.sq
+l
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+
+
+Ejecutando: .\database\04_functions\01_reservaciones.sql
+Successfully copied 11.3kB (transferred 12.8kB) to hotel-prueba-postgres-bacalar:/tmp/01_reservaciones.sql
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\01_bitacora.sql
+Successfully copied 2.3kB (transferred 4.1kB) to hotel-prueba-postgres-bacalar:/tmp/01_bitacora.sql
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+
+
+Ejecutando: .\database\05_triggers\02_triggers_auditoria.sql
+Successfully copied 2.17kB (transferred 4.1kB) to hotel-prueba-postgres-bacalar:/tmp/02_triggers_auditoria.sql
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:9: NOTICE:  trigger "trg_auditoria_huespedes" for relation "huespedes" does not exis
+t, skipping
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:18: NOTICE:  trigger "trg_auditoria_habitaciones" for relation "habitaciones" does n
+ot exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:27: NOTICE:  trigger "trg_auditoria_tarifas" for relation "tarifas" does not exist,
+skipping
+DROP TRIGGER
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:36: NOTICE:  trigger "trg_auditoria_temporadas" for relation "temporadas" does not e
+xist, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:45: NOTICE:  trigger "trg_auditoria_reservaciones" for relation "reservaciones" does
+ not exist, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:54: NOTICE:  trigger "trg_auditoria_pagos" for relation "pagos" does not exist, skip
+ping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:63: NOTICE:  trigger "trg_auditoria_servicios" for relation "servicios" does not exi
+st, skipping
+CREATE TRIGGER
+psql:/tmp/02_triggers_auditoria.sql:73: NOTICE:  trigger "trg_auditoria_reservacion_servicios" for relation "reservacion
+_servicios" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+
+
+Ejecutando: .\database\05_triggers\03_triggers_totales.sql
+Successfully copied 7.94kB (transferred 9.73kB) to hotel-prueba-postgres-bacalar:/tmp/03_triggers_totales.sql
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:172: NOTICE:  trigger "trg_validar_detalle_servicio" for relation "reservacion_servici
+os" does not exist, skipping
+CREATE TRIGGER
+psql:/tmp/03_triggers_totales.sql:180: NOTICE:  trigger "trg_recalcular_total_servicios" for relation "reservacion_servi
+cios" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:276: NOTICE:  trigger "trg_validar_pago" for relation "pagos" does not exist, skipping
+CREATE TRIGGER
+DROP TRIGGER
+psql:/tmp/03_triggers_totales.sql:284: NOTICE:  trigger "trg_recalcular_total_pagado" for relation "pagos" does not exis
+t, skipping
+CREATE TRIGGER
+
+
+Ejecutando: .\database\06_views\01_vistas_operativas.sql
+Successfully copied 2.61kB (transferred 4.61kB) to hotel-prueba-postgres-bacalar:/tmp/01_vistas_operativas.sql
+CREATE VIEW
+CREATE VIEW
+CREATE VIEW
+
+
+Ejecutando: .\database\07_indexes\01_indices_optimizacion.sql
+Successfully copied 676B (transferred 2.56kB) to hotel-prueba-postgres-bacalar:/tmp/01_indices_optimizacion.sql
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+ANALYZE
+
+
+===== 5. ESTRUCTURA CENTRAL =====
+
+Ejecutando: .\database\08_partitions\01_particionar_reservaciones_central.sql
+Successfully copied 5.57kB (transferred 7.17kB) to hotel-prueba-postgres-central:/tmp/01_particionar_reservaciones_centr
+al.sql
+BEGIN
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+COMMIT
+       particion       |                         limite
+-----------------------+--------------------------------------------------------
+ reservaciones_bacalar | FOR VALUES IN ('33333333-3333-4333-8333-333333333333')
+ reservaciones_cancun  | FOR VALUES IN ('11111111-1111-4111-8111-111111111111')
+ reservaciones_tulum   | FOR VALUES IN ('22222222-2222-4222-8222-222222222222')
+(3 rows)
+
+               indexname               |                                                           indexdef
+
+---------------------------------------+--------------------------------------------------------------------------------
+----------------------------------------------
+ idx_reservaciones_estado              | CREATE INDEX idx_reservaciones_estado ON ONLY public.reservaciones USING btree
+(estado)
+ idx_reservaciones_fechas              | CREATE INDEX idx_reservaciones_fechas ON ONLY public.reservaciones USING gist (
+periodo)
+ idx_reservaciones_huesped             | CREATE INDEX idx_reservaciones_huesped ON ONLY public.reservaciones USING btree
+ (huesped_id)
+ idx_reservaciones_sede_estado_entrada | CREATE INDEX idx_reservaciones_sede_estado_entrada ON ONLY public.reservaciones
+ USING btree (sede_id, estado, fecha_entrada)
+ reservaciones_pkey                    | CREATE UNIQUE INDEX reservaciones_pkey ON ONLY public.reservaciones USING btree
+ (sede_id, reservacion_id)
+(5 rows)
+
+
+Ejecutando: .\database\08_partitions\02_tablas_auxiliares_central.sql
+Successfully copied 4.25kB (transferred 6.14kB) to hotel-prueba-postgres-central:/tmp/02_tablas_auxiliares_central.sql
+BEGIN
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+COMMIT
+       tablename
+-----------------------
+ pagos
+ reservacion_servicios
+ servicios
+(3 rows)
+
+
+Ejecutando: .\database\06_views\01_vistas_operativas.sql
+Successfully copied 2.61kB (transferred 4.61kB) to hotel-prueba-postgres-central:/tmp/01_vistas_operativas.sql
+CREATE VIEW
+CREATE VIEW
+CREATE VIEW
+
+
+Ejecutando: .\database\07_indexes\01_indices_optimizacion.sql
+Successfully copied 676B (transferred 2.56kB) to hotel-prueba-postgres-central:/tmp/01_indices_optimizacion.sql
+psql:/tmp/01_indices_optimizacion.sql:10: CREATE INDEX
+NOTICE:  relation "idx_reservaciones_sede_estado_entrada" already exists, skipping
+CREATE INDEX
+ANALYZE
+ANALYZE
+
+
+===== 6. PUBLICACIONES LOGICAS =====
+
+Ejecutando: .\database\09_distributed\01_publicacion_cancun.sql
+Successfully copied 2.57kB (transferred 4.61kB) to hotel-prueba-postgres-cancun:/tmp/01_publicacion_cancun.sql
+BEGIN
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+COMMIT
+      pubname       | schemaname |       tablename       |                        rowfilter
+--------------------+------------+-----------------------+----------------------------------------------------------
+ pub_central_cancun | public     | habitaciones          | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | huespedes             | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | pagos                 | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | reservacion_servicios | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | reservaciones         | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | servicios             | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | tarifas               | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+ pub_central_cancun | public     | temporadas            | (sede_id = '11111111-1111-4111-8111-111111111111'::uuid)
+(8 rows)
+
+
+Ejecutando: .\database\09_distributed\02_publicacion_tulum.sql
+Successfully copied 2.42kB (transferred 4.1kB) to hotel-prueba-postgres-tulum:/tmp/02_publicacion_tulum.sql
+BEGIN
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+COMMIT
+      pubname      | schemaname |       tablename       |                        rowfilter
+-------------------+------------+-----------------------+----------------------------------------------------------
+ pub_central_tulum | public     | habitaciones          | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | huespedes             | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | pagos                 | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | reservacion_servicios | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | reservaciones         | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | servicios             | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | tarifas               | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+ pub_central_tulum | public     | temporadas            | (sede_id = '22222222-2222-4222-8222-222222222222'::uuid)
+(8 rows)
+
+
+Ejecutando: .\database\09_distributed\03_publicacion_bacalar.sql
+Successfully copied 2.43kB (transferred 4.1kB) to hotel-prueba-postgres-bacalar:/tmp/03_publicacion_bacalar.sql
+BEGIN
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+COMMIT
+       pubname       | schemaname |       tablename       |                        rowfilter
+---------------------+------------+-----------------------+----------------------------------------------------------
+ pub_central_bacalar | public     | habitaciones          | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | huespedes             | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | pagos                 | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | reservacion_servicios | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | reservaciones         | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | servicios             | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | tarifas               | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+ pub_central_bacalar | public     | temporadas            | (sede_id = '33333333-3333-4333-8333-333333333333'::uuid)
+(8 rows)
+
+
+===== 7. CONFIGURACION FDW =====
+Se solicitara la contrasena para configurar FDW.
+
+Ejecutando: .\database\09_distributed\04_configuracion_fdw_central.sql
+Successfully copied 5.85kB (transferred 7.68kB) to hotel-prueba-postgres-central:/tmp/04_configuracion_fdw_central.sql
+CREATE EXTENSION
+CREATE SERVER
+CREATE SERVER
+CREATE SERVER
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE USER MAPPING
+CREATE USER MAPPING
+CREATE USER MAPPING
+DO
+DO
+DO
+CREATE VIEW
+  servidor   |                            configuracion
+-------------+---------------------------------------------------------------------
+ fdw_bacalar | {host=hotel-prueba-postgres-bacalar,port=5432,dbname=hotel_bacalar}
+ fdw_cancun  | {host=hotel-prueba-postgres-cancun,port=5432,dbname=hotel_cancun}
+ fdw_tulum   | {host=hotel-prueba-postgres-tulum,port=5432,dbname=hotel_tulum}
+(3 rows)
+
+    esquema     | tablas_externas
+----------------+-----------------
+ remoto_bacalar |               8
+ remoto_cancun  |               8
+ remoto_tulum   |               8
+(3 rows)
+
+ total_tablas_externas
+-----------------------
+                    24
+(1 row)
+
+
+Verificando la conexion FDW...
+FDW OK: 0
+
+===== 8. SUSCRIPCIONES LOGICAS =====
+Se solicitara la contrasena de replicacion.
+
+Ejecutando: .\database\09_distributed\05_suscripciones_central.sql
+Successfully copied 3.34kB (transferred 5.12kB) to hotel-prueba-postgres-central:/tmp/05_suscripciones_central.sql
+psql:/tmp/05_suscripciones_central.sql:66: NOTICE:  created replication slot "sub_cancun" on publisher
+CREATE SUBSCRIPTION
+psql:/tmp/05_suscripciones_central.sql:86: NOTICE:  created replication slot "sub_tulum" on publisher
+CREATE SUBSCRIPTION
+psql:/tmp/05_suscripciones_central.sql:106: NOTICE:  created replication slot "sub_bacalar" on publisher
+CREATE SUBSCRIPTION
+ suscripcion | habilitada |    slot     |     publicaciones     | estado | tablas
+-------------+------------+-------------+-----------------------+--------+--------
+ sub_bacalar | t          | sub_bacalar | {pub_central_bacalar} | i      |      8
+ sub_cancun  | t          | sub_cancun  | {pub_central_cancun}  | f      |      1
+ sub_cancun  | t          | sub_cancun  | {pub_central_cancun}  | i      |      6
+ sub_cancun  | t          | sub_cancun  | {pub_central_cancun}  | s      |      1
+ sub_tulum   | t          | sub_tulum   | {pub_central_tulum}   | i      |      8
+(5 rows)
+
+
+========================================
+ INSTALACION FINALIZADA
+========================================
+Nodos configurados:
+- Cancun: hotel_cancun
+- Tulum: hotel_tulum
+- Bacalar: hotel_bacalar
+- Central: hotel_central
+
+La estructura distribuida ha sido instalada.
+
+INSTALACION COMPLETADA CORRECTAMENTE.
+**********************
+Fin de la transcripción de Windows PowerShell
+Hora de finalización: 20261113102726
+**********************

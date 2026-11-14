@@ -3,17 +3,24 @@
 -- SUSCRIPCIONES LOGICAS: NODO CENTRAL
 -- Recibe cambios de Cancun, Tulum y Bacalar.
 --
--- La contrasena se solicita de forma interactiva y no se
--- almacena directamente en el archivo.
+-- La contrasena se recibe por la variable de entorno
+-- REPLICATION_PASSWORD. El instalador la solicita de forma
+-- interactiva y segura; no se almacena en este archivo.
 --
 -- CREATE SUBSCRIPTION se ejecuta fuera de una transaccion.
 -- ============================================================
 
 \set ON_ERROR_STOP on
 
--- 1. Solicitar contrasena sin mostrarla en pantalla.
+-- 1. Leer la contrasena desde el entorno.
 
-\prompt -s 'Contrasena de replicacion: ' replication_password
+\getenv replication_password REPLICATION_PASSWORD
+
+\if :{?replication_password}
+\else
+    \echo 'ERROR: defina la variable de entorno REPLICATION_PASSWORD.'
+    DO $$ BEGIN RAISE EXCEPTION 'REPLICATION_PASSWORD no definida'; END $$;
+\endif
 
 -- 2. Construir cadenas de conexion para cada sede.
 

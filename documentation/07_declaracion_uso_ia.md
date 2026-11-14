@@ -40,7 +40,7 @@ La interpretación de los resultados, las decisiones de diseño y la validación
 
 - **Desarrollador:** OpenAI.
 - **Herramienta:** ChatGPT.
-- **Modelo utilizado:** GPT-6.
+- **Modelo utilizado:** GPT-5.
 - **Uso principal:** asistencia técnica, análisis, revisión de código, resolución de dudas y apoyo en la documentación del proyecto.
 
 ## 7.5 Compromiso de transparencia

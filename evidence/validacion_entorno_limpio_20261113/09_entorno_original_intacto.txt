@@ -1,0 +1,5 @@
+﻿Fecha de evidencia: 2026-11-13T10:30:45.5873444-05:00
+CANCUN: reservaciones=6 prepared=0
+TULUM: reservaciones=3 prepared=0
+BACALAR: reservaciones=1 prepared=0
+CENTRAL: suscripciones=3 relaciones_r=24 reservaciones=10
