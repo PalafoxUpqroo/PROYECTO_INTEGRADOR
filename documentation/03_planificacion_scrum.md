@@ -40,9 +40,38 @@ Al tratarse de un proyecto individual, una misma persona desempeña los diferent
 | PB-18 | Documentación técnica y académica  | Alta      | Informe, manuales y referencias.         |
 | PB-19 | Preparación de la presentación     | Alta      | Material para la defensa del proyecto.   |
 
+
+### Mapeo del backlog con historias y criterios de aceptación
+
+| PB | Historia(s) | Criterios de aceptación | Sprint |
+| --- | --- | --- | --- |
+| PB-01 | HU-01 a HU-10 | Problema y alcance definidos; historias con criterios | 1 |
+| PB-02 | HU-07, HU-08 | Arquitectura de 4 nodos; consultas y traslado | 1 |
+| PB-03 | Todas | Cuatro contenedores y cuatro bases activas | 1 |
+| PB-04 | HU-01 a HU-08 | Entidades, PK/FK y restricciones de integridad | 1 |
+| PB-05 | HU-01, HU-02 | Herencia, tipos compuestos, arreglos y JSONB | 1 |
+| PB-06 | HU-01 a HU-06 | Reserva, check-in, check-out y cancelación | 2 |
+| PB-07 | HU-09 | Bitácora y cálculo automático de totales | 2 |
+| PB-08 | HU-01, HU-07 | Vistas operativas e índices de consulta | 2 |
+| PB-09 | HU-01 | Planes con y sin índices sobre 50,000 registros | 2 |
+| PB-10 | HU-03 | Dos hilos: una reserva aceptada y una rechazada | 2 |
+| PB-11 | HU-10 | pg_basebackup y archivado WAL | 3 |
+| PB-12 | HU-10 | PITR con registro anterior y posterior al corte | 3 |
+| PB-13 | HU-07 | Particiones centrales por sede | 3 |
+| PB-14 | HU-07 | 24 relaciones y operaciones INSERT/UPDATE/DELETE | 3 |
+| PB-15 | HU-07 | 24 tablas FDW y plan con Foreign Scan | 3 |
+| PB-16 | HU-08 | PREPARE/COMMIT, bitácora y cero pendientes | 3 |
+| PB-17 | HU-01 a HU-08 | Menú, operaciones por sede y reporte consolidado | 4 |
+| PB-18 | Todas | README, manuales, informe y referencias | 4 |
+| PB-19 | Todas | Presentación y demostración final | 4 |
+
+Los criterios completos de cada historia se encuentran en la sección 12.4.
+
 ## 3.4 Planificación de sprints
 
 ### Sprint 1. Análisis, arquitectura y estructura de datos
+
+**Periodo: primera semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** establecer la arquitectura del proyecto y construir la estructura inicial de las bases de datos.
 
@@ -58,7 +87,11 @@ Actividades:
 
 **Resultado:** infraestructura local con cuatro instancias PostgreSQL y estructura inicial de datos.
 
+**Revisión del incremento: se aceptó la arquitectura de cuatro nodos y la estructura inicial; la demostración se limitó a la creación de las bases y las tablas.**
+
 ### Sprint 2. Operaciones, integridad y optimización
+
+**Periodo: segunda semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** implementar las operaciones principales de reservaciones y los mecanismos de integridad.
 
@@ -75,7 +108,11 @@ Actividades:
 
 **Resultado:** operaciones hoteleras funcionales, controles de integridad, auditoría y optimización de consultas.
 
+**Revisión del incremento: se aceptaron las funciones, triggers, vistas e índices; la prueba de concurrencia y los planes de ejecución quedaron documentados.**
+
 ### Sprint 3. Transacciones y distribución
+
+**Periodo: tercera semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** implementar y comprobar los mecanismos de concurrencia, recuperación y distribución de información.
 
@@ -91,7 +128,11 @@ Actividades:
 
 **Resultado:** arquitectura distribuida funcional y pruebas de integridad, replicación y recuperación.
 
+**Revisión del incremento: se aceptaron la replicación, FDW, particionamiento, PITR y 2PC; se verificaron 24 relaciones y cero transacciones preparadas.**
+
 ### Sprint 4. Integración, cliente y documentación
+
+**Periodo: 4 al 11 de noviembre de 2026.**
 
 **Objetivo:** integrar el cliente Python con los tres nodos operativos, verificar las funcionalidades principales y completar la documentación y los entregables académicos del proyecto.
 
@@ -114,9 +155,11 @@ Actividades:
 
 **Resultado:** se cuenta con un cliente Python integrado, operaciones principales verificadas, documentación técnica actualizada y evidencias de ejecución. El instalador se validó de principio a fin en un entorno limpio aislado, el informe académico se integró en un PDF único y la presentación final quedó preparada.
 
+**Revisión del incremento: se aceptó el cliente, la instalación limpia y los entregables; los ajustes pendientes son de documentación.**
+
 ## 3.5 Seguimiento y control
 
-Para representar el estado de las actividades del proyecto se utilizó un tablero Kanban con los siguientes estados:
+El tablero se elaboró en Trello. Para representar el estado de las actividades del proyecto se utilizó un tablero Kanban con los siguientes estados:
 
 - Por hacer.
 - En progreso.

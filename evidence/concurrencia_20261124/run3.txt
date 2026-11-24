@@ -1,0 +1,30 @@
+Entorno de ejecucion: original
+Destino: entorno=original host=127.0.0.1 puerto=5541 base=hotel_cancun
+Limpieza: 1 reservacion(es) previa(s) de concurrencia eliminada(s).
+============================================================
+PRUEBA DE CONCURRENCIA - SISTEMA HOTELERO
+============================================================
+Sede: Cancun
+Habitacion: P-DIST-01
+Entrada: 2026-11-25
+Salida: 2026-11-27
+Solicitudes simultaneas: 2
+============================================================
+[Hilo 1] Conexion establecida. Esperando al otro hilo...
+[Hilo 2] Conexion establecida. Esperando al otro hilo...
+[Hilo 2] Intentando reservar...
+[Hilo 1] Intentando reservar...
+[Hilo 2] RESERVACION ACEPTADA: aeb65f0b-ad26-47ad-8b63-289403c45db1
+[Hilo 1] RESERVACION RECHAZADA: 23P01 - conflicting key value violates exclusion constraint "ex_reservacion_sin_traslape"
+
+============================================================
+RESUMEN DE CONCURRENCIA
+============================================================
+Solicitudes aceptadas: 1
+Solicitudes rechazadas: 1
+Errores inesperados: 0
+{'hilo': 1, 'resultado': 'RECHAZADA', 'reservacion_id': None, 'error': '23P01'}
+{'hilo': 2, 'resultado': 'ACEPTADA', 'reservacion_id': 'aeb65f0b-ad26-47ad-8b63-289403c45db1', 'error': None}
+
+RESULTADO: PRUEBA EXITOSA
+PostgreSQL impidio la doble reservacion.

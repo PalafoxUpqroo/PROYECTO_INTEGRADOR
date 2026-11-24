@@ -132,7 +132,11 @@ Primero, se crearon dos tipos compuestos:
 - `direccion_type`: almacena calle, número, colonia, ciudad, estado, código postal y país.
 - `rango_estancia`: representa una fecha de entrada y una fecha de salida.
 
+El tipo compuesto `rango_estancia` se definió para representar una entrada y una salida; para la restricción de traslapes se utilizó el tipo nativo `DATERANGE` (columna `periodo`), que ofrece operadores de solapamiento e índices GiST.
+
 También se utilizaron arreglos mediante el atributo `amenidades` de las habitaciones, que permite almacenar varios elementos en una sola columna. Para las preferencias de los huéspedes se incorporó el tipo `JSONB` [8], que permite guardar información semiestructurada.
+
+Además de los arreglos, se comprobó el comportamiento de conjuntos mediante `UNION`, `INTERSECT` y `EXCEPT` sobre las amenidades de las habitaciones (Anexo B, evidencia 17).
 
 Se implementó herencia de tablas mediante `INHERITS` [9]. Se definieron las tablas padre `huesped_especializacion` y `habitacion_especializacion`, con sus respectivas tablas especializadas para huéspedes individuales, huéspedes corporativos, habitaciones estándar y suites.
 
@@ -153,6 +157,8 @@ Se crearon las siguientes vistas operativas:
 - `vw_servicios_reservacion`: presenta los servicios asociados a las reservaciones.
 
 En el nodo central también se creó `vw_reservaciones_distribuidas`, que permite consultar reservaciones de las tres sedes mediante conexiones distribuidas.
+
+La disponibilidad se implementó como función (`fn_consultar_disponibilidad`) porque recibe fechas y número de huéspedes como parámetros; las vistas cubren la ocupación, el detalle de reservaciones y los servicios.
 
 ### Funciones almacenadas
 
@@ -178,14 +184,18 @@ Se generaron 50,000 reservaciones de prueba y se analizaron consultas con `EXPLA
 
 | Consulta | Sin utilizar métodos de acceso por índice | Con índice | Mejora aproximada |
 | -------- | ----------------------------------------: | ---------: | ----------------: |
-| B-tree   |                                  5.967 ms |   0.230 ms |           96.15 % |
-| GiST     |                                  7.497 ms |   0.406 ms |           94.58 % |
+| B-tree   |                                 13.018 ms |   0.056 ms |           99.57 % |
+| GiST     |                                  9.308 ms |   0.343 ms |           96.31 % |
 
 En la consulta B-tree se pasó de un recorrido secuencial (`Seq Scan`) a un recorrido mediante índice (`Index Scan`). En la consulta GiST se utilizó un recorrido de índice y acceso por bloques (`Bitmap Index Scan` y `Bitmap Heap Scan`).
 
 La comparación sin índices se realizó mediante la desactivación de los métodos de acceso por índice durante la prueba. Por lo tanto, representa una comparación controlada y no una medición histórica tomada antes de crear los índices.
 
 **Resultado:** se comprobó el funcionamiento de las vistas, funciones, triggers e índices. Las pruebas de cálculo de importes verificaron que los servicios modifican el total de la reservación y que los pagos actualizan el saldo pendiente. También se validó que un pago superior al total permitido sea rechazado.
+
+### Estructura de archivos de almacenamiento
+
+La estructura física se verificó con `pg_relation_filepath`, `pg_class.relfilenode` y `pg_relation_size`. La tabla `reservaciones` de Cancún se almacena en `/var/lib/postgresql/18/docker/base/16384/17513`, y sus índices ocupan archivos separados dentro del mismo directorio (Anexo C, evidencias 10 y 11).
 
 ## 8.4 Unidad IV. Transacciones, integridad y recuperación
 
@@ -206,6 +216,10 @@ Se desarrolló una prueba en Python utilizando dos hilos y conexiones independie
 - El código SQLSTATE devuelto fue `23P01`.
 - No se registraron errores inesperados.
 - La prueba confirmó que no se produjo una doble reservación.
+
+### Transacciones y reversión
+
+Se ejecutó una transacción de prueba con `BEGIN`, `INSERT`, `SELECT` y `ROLLBACK`. Después del `ROLLBACK`, la tabla temporal quedó con 0 registros, lo que confirma que los cambios no se confirman hasta ejecutar `COMMIT` (Anexo D, evidencia 05).
 
 ### Respaldo completo
 
@@ -251,6 +265,10 @@ En el nodo central se convirtió la tabla `reservaciones` en una tabla particion
 
 La estructura permite organizar las reservaciones consolidadas de acuerdo con la sede de origen.
 
+### Fragmentación de datos
+
+La fragmentación es horizontal por sede: cada base operativa conserva los registros operativos de su sede y el nodo central reorganiza las reservaciones en particiones por `sede_id`. El catálogo de sedes es común a los cuatro nodos; por ello, el aislamiento de escritura se refuerza con las claves foráneas compuestas y queda como trabajo futuro un control de permisos por sede (Anexo E, evidencia 03).
+
 ### Replicación lógica
 
 Se configuró una publicación por sede y una suscripción correspondiente en el nodo central [17]:
@@ -295,7 +313,7 @@ El cliente utiliza las funciones almacenadas de PostgreSQL para ejecutar las ope
 
 **Resultado:** se comprobó la conexión con las tres sedes y el nodo central. Se realizaron pruebas de disponibilidad, creación y cancelación de reservaciones, check-in, check-out y consulta de información consolidada.
 
-# 9. Resultados generales
+# 9. Pruebas y resultados
 
 El proyecto permitió implementar y comprobar una solución distribuida para la administración de reservaciones hoteleras. Se construyeron cuatro instancias PostgreSQL, un modelo relacional con restricciones de integridad, estructuras orientadas a objetos, funciones, triggers, vistas e índices.
 
@@ -332,6 +350,33 @@ Para comprobar que la instalación puede reproducirse sin depender del entorno o
 
 Las evidencias se encuentran en `evidence/validacion_entorno_limpio_20261113/` e incluyen la salida del instalador, el estado de las publicaciones y suscripciones, los datos demo, las pruebas y la verificación final del traslado 2PC.
 
+
+## 9.2 Lista de cotejo de evidencias
+
+| Unidad | Evidencia | Dónde se demuestra | Estado |
+| --- | --- | --- | --- |
+| I | Diagrama relacional | 8.1; Anexo A | Cumple |
+| I | Sentencias SQL de construcción (DDL/DML) | 8.1; Anexo A | Cumple |
+| I | Características del motor y gestor | 8.1; Anexo A | Cumple |
+| II | Datos complejos y estructurados almacenados | 8.2; Anexo B | Cumple |
+| II | Sentencias SQL de la herencia generada | 8.2; Anexo B | Cumple |
+| II | Herencia de tablas | 8.2; Anexo B | Cumple |
+| II | Arreglos y conjuntos | 8.2; Anexo B | Cumple |
+| III | Resultados del procesamiento de consultas (planes) | 8.3; Anexo C | Cumple |
+| III | Vistas | 8.3; Anexo C | Cumple |
+| III | Estructura de archivos de almacenamiento | 8.3; Anexo C | Cumple |
+| III | Procedimientos almacenados | 8.3; Anexo C | Cumple |
+| III | Triggers | 8.3; Anexo C | Cumple |
+| IV | Transacciones | 8.4; Anexo D | Cumple |
+| IV | Controles de concurrencia | 8.4; Anexo D | Cumple |
+| IV | Sistemas de recuperación (respaldo y restauración) | 8.4; Anexo D | Cumple |
+| V | Replicación de datos | 8.5; Anexo E | Cumple |
+| V | Fragmentación de datos | 8.5; Anexo E | Cumple |
+| V | Consultas distribuidas | 8.5; Anexo E | Cumple |
+| V | Transacciones distribuidas | 8.5; Anexo E | Cumple |
+
+La lista se contrastó con la lista de cotejo de la guía. Las 19 evidencias cuentan con respaldo en el informe y en el repositorio.
+
 # 10. Limitaciones identificadas
 
 La solución es un prototipo académico funcional y presenta algunas limitaciones que deben considerarse:
@@ -357,9 +402,11 @@ Como resultado, se obtuvo un prototipo funcional que integra los principales req
 
 \newpage
 
-# 2. REQUISITOS E HISTORIAS DE USUARIO
+# PARTE II. DOCUMENTOS COMPLEMENTARIOS
 
-## 2.1 Identificación de actores
+# 12. REQUISITOS E HISTORIAS DE USUARIO
+
+## 12.1 Identificación de actores
 
 Para definir las funcionalidades del sistema se consideran los siguientes actores:
 
@@ -372,7 +419,7 @@ Para definir las funcionalidades del sistema se consideran los siguientes actore
 
 Estos actores representan los usuarios funcionales del sistema. No implican que se haya implementado un módulo de autenticación o administración de cuentas en el cliente de demostración.
 
-## 2.2 Requisitos funcionales
+## 12.2 Requisitos funcionales
 
 | ID    | Requisito                               | Descripción                                                                                                                          |
 | ---------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -393,7 +440,7 @@ Estos actores representan los usuarios funcionales del sistema. No implican que 
 | RF-15 | Respaldo y recuperación                 | En el nodo Cancún, debe permitir generar respaldos físicos y recuperar información mediante archivado WAL y PITR.                    |
 | RF-16 | Cliente de demostración                 | Debe ofrecer una interfaz de consola en Python para realizar operaciones hoteleras y consultar reportes.                             |
 
-## 2.3 Requisitos no funcionales
+## 12.3 Requisitos no funcionales
 
 | ID     | Requisito                | Descripción                                                                                                                                                                                           |
 | ----------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -407,7 +454,7 @@ Estos actores representan los usuarios funcionales del sistema. No implican que 
 | RNF-08 | Portabilidad del entorno | Los servicios de PostgreSQL deben poder ejecutarse mediante Docker Compose en un entorno compatible.                                                                                                  |
 | RNF-09 | Trazabilidad             | Las operaciones auditadas deben conservar información sobre el tipo de operación, fecha y datos afectados.                                                                                            |
 
-## 2.4 Historias de usuario
+## 12.4 Historias de usuario
 
 ### HU-01. Consultar disponibilidad
 
@@ -557,7 +604,7 @@ Estos actores representan los usuarios funcionales del sistema. No implican que 
 
 **Verificación:** respaldo y prueba PITR del nodo Cancún.
 
-## 2.5 Restricciones y consideraciones del alcance
+## 12.5 Restricciones y consideraciones del alcance
 
 - El proyecto utiliza cuatro instancias PostgreSQL independientes.
 - La replicación lógica está configurada desde las tres sedes hacia el nodo central.
@@ -569,7 +616,7 @@ Estos actores representan los usuarios funcionales del sistema. No implican que 
 - Aunque las bases contienen un catálogo común de las tres sedes, todavía se requieren controles adicionales de escritura y permisos para restringir las operaciones de cada nodo a su sede correspondiente.
 - La arquitectura no incluye un mecanismo de recuperación automática ni alta disponibilidad comprobada.
 
-## 2.6 Relación entre requisitos y componentes implementados
+## 12.6 Relación entre requisitos y componentes implementados
 
 | Requisitos    | Componentes principales                                                                           |
 | ------------- | ------------------------------------------------------------------------------------------------- |
@@ -588,15 +635,15 @@ Estos actores representan los usuarios funcionales del sistema. No implican que 
 
 \newpage
 
-# 3. PLANIFICACIÓN DEL PROYECTO CON SCRUM
+# 13. PLANIFICACIÓN DEL PROYECTO CON SCRUM
 
-## 3.1 Metodología
+## 13.1 Metodología
 
 Para organizar el desarrollo se adoptó un enfoque ágil basado en Scrum, utilizando iteraciones semanales para dividir el trabajo en objetivos pequeños y verificables. El proyecto se estructuró en cuatro sprints, considerando las actividades de análisis, diseño, implementación, integración, pruebas y documentación.
 
 Debido a que la planificación se está documentando después de realizar una parte importante del desarrollo, los sprints y sus resultados representan una reconstrucción organizada de las actividades realizadas. No se presentan reuniones, métricas históricas o registros de seguimiento que no hayan sido documentados.
 
-## 3.2 Roles del proyecto
+## 13.2 Roles del proyecto
 
 | Rol Scrum        | Responsable                                                                              |
 | ---------------- | ---------------------------------------------------------------------------------------- |
@@ -606,7 +653,7 @@ Debido a que la planificación se está documentando después de realizar una pa
 
 Al tratarse de un proyecto individual, una misma persona desempeña los diferentes roles.
 
-## 3.3 Product Backlog
+## 13.3 Product Backlog
 
 | ID    | Elemento del backlog               | Prioridad | Resultado esperado                       |
 | -------- | ---------------------------------- | ---------- | ---------------------------------------- |
@@ -630,9 +677,38 @@ Al tratarse de un proyecto individual, una misma persona desempeña los diferent
 | PB-18 | Documentación técnica y académica  | Alta      | Informe, manuales y referencias.         |
 | PB-19 | Preparación de la presentación     | Alta      | Material para la defensa del proyecto.   |
 
-## 3.4 Planificación de sprints
+
+### Mapeo del backlog con historias y criterios de aceptación
+
+| PB | Historia(s) | Criterios de aceptación | Sprint |
+| --- | --- | --- | --- |
+| PB-01 | HU-01 a HU-10 | Problema y alcance definidos; historias con criterios | 1 |
+| PB-02 | HU-07, HU-08 | Arquitectura de 4 nodos; consultas y traslado | 1 |
+| PB-03 | Todas | Cuatro contenedores y cuatro bases activas | 1 |
+| PB-04 | HU-01 a HU-08 | Entidades, PK/FK y restricciones de integridad | 1 |
+| PB-05 | HU-01, HU-02 | Herencia, tipos compuestos, arreglos y JSONB | 1 |
+| PB-06 | HU-01 a HU-06 | Reserva, check-in, check-out y cancelación | 2 |
+| PB-07 | HU-09 | Bitácora y cálculo automático de totales | 2 |
+| PB-08 | HU-01, HU-07 | Vistas operativas e índices de consulta | 2 |
+| PB-09 | HU-01 | Planes con y sin índices sobre 50,000 registros | 2 |
+| PB-10 | HU-03 | Dos hilos: una reserva aceptada y una rechazada | 2 |
+| PB-11 | HU-10 | pg_basebackup y archivado WAL | 3 |
+| PB-12 | HU-10 | PITR con registro anterior y posterior al corte | 3 |
+| PB-13 | HU-07 | Particiones centrales por sede | 3 |
+| PB-14 | HU-07 | 24 relaciones y operaciones INSERT/UPDATE/DELETE | 3 |
+| PB-15 | HU-07 | 24 tablas FDW y plan con Foreign Scan | 3 |
+| PB-16 | HU-08 | PREPARE/COMMIT, bitácora y cero pendientes | 3 |
+| PB-17 | HU-01 a HU-08 | Menú, operaciones por sede y reporte consolidado | 4 |
+| PB-18 | Todas | README, manuales, informe y referencias | 4 |
+| PB-19 | Todas | Presentación y demostración final | 4 |
+
+Los criterios completos de cada historia se encuentran en la sección 12.4.
+
+## 13.4 Planificación de sprints
 
 ### Sprint 1. Análisis, arquitectura y estructura de datos
+
+**Periodo: primera semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** establecer la arquitectura del proyecto y construir la estructura inicial de las bases de datos.
 
@@ -648,7 +724,11 @@ Actividades:
 
 **Resultado:** infraestructura local con cuatro instancias PostgreSQL y estructura inicial de datos.
 
+**Revisión del incremento: se aceptó la arquitectura de cuatro nodos y la estructura inicial; la demostración se limitó a la creación de las bases y las tablas.**
+
 ### Sprint 2. Operaciones, integridad y optimización
+
+**Periodo: segunda semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** implementar las operaciones principales de reservaciones y los mecanismos de integridad.
 
@@ -665,7 +745,11 @@ Actividades:
 
 **Resultado:** operaciones hoteleras funcionales, controles de integridad, auditoría y optimización de consultas.
 
+**Revisión del incremento: se aceptaron las funciones, triggers, vistas e índices; la prueba de concurrencia y los planes de ejecución quedaron documentados.**
+
 ### Sprint 3. Transacciones y distribución
+
+**Periodo: tercera semana de desarrollo (noviembre de 2026).**
 
 **Objetivo:** implementar y comprobar los mecanismos de concurrencia, recuperación y distribución de información.
 
@@ -681,9 +765,15 @@ Actividades:
 
 **Resultado:** arquitectura distribuida funcional y pruebas de integridad, replicación y recuperación.
 
+**Revisión del incremento: se aceptaron la replicación, FDW, particionamiento, PITR y 2PC; se verificaron 24 relaciones y cero transacciones preparadas.**
+
 ### Sprint 4. Integración, cliente y documentación
 
+**Periodo: 4 al 11 de noviembre de 2026.**
+
 **Resultado:** cliente Python integrado y funcionalidades principales verificadas. La documentación técnica, las evidencias de ejecución y el instalador validado en un entorno limpio están disponibles; el informe académico se integró en un PDF único y la presentación final quedó preparada.
+
+**Revisión del incremento: se aceptó el cliente, la instalación limpia y los entregables; los ajustes pendientes son de documentación.**
 
 Actividades:
 
@@ -698,9 +788,10 @@ Actividades:
 
 **Resultado:** producto integrado con cliente de demostración, documentación técnica y preparación de entregables académicos.
 
-## 3.5 Seguimiento y control
 
-El avance se puede organizar mediante un tablero Kanban con los siguientes estados:
+## 13.5 Seguimiento y control
+
+El tablero se elaboró en Trello. El avance se puede organizar mediante un tablero Kanban con los siguientes estados:
 
 - Por hacer.
 - En progreso.
@@ -709,7 +800,7 @@ El avance se puede organizar mediante un tablero Kanban con los siguientes estad
 
 Los cambios de estado deben reflejar el avance real de cada actividad. El historial de Git permite identificar las modificaciones y commits asociados al desarrollo.
 
-## 3.6 Seguimiento de avance
+## 13.6 Seguimiento de avance
 
 No se cuenta con registros históricos de puntos de historia, horas estimadas por tarea o mediciones diarias de trabajo. Por esta razón, no se presenta un burndown chart histórico como si hubiera sido generado durante cada sprint.
 
@@ -727,7 +818,7 @@ El porcentaje de avance se calcula mediante:
 
 **Avance (%) = (Elementos completados / Elementos comprometidos) × 100**
 
-### 3.6.1 Burndown Chart
+### 13.6.1 Burndown Chart
 
 Debido a que no se registraron mediciones diarias durante el desarrollo, se presenta una reconstrucción retrospectiva del avance utilizando como unidad de medida los 19 elementos del Product Backlog. El gráfico compara el trabajo pendiente ideal con el avance reconstruido al cierre de cada sprint y al corte del 11 de noviembre de 2026.
 
@@ -761,7 +852,7 @@ line [19, 14, 9, 3, 2]
 
 ![Burndown Chart reconstruido](burndown_scrum.png)
 
-## 3.7 Retrospectivas
+## 13.7 Retrospectivas
 
 Las siguientes retrospectivas son una evaluación retrospectiva del desarrollo, no actas de reuniones celebradas durante los sprints.
 
@@ -789,15 +880,15 @@ Las siguientes retrospectivas son una evaluación retrospectiva del desarrollo, 
 - Dificultades: el producto técnico avanzó antes que la documentación académica.
 - Mejora: reservar tiempo específico para evidencias, manuales y preparación de la defensa.
 
-## 3.8 Conclusión de la planificación
+## 13.8 Conclusión de la planificación
 
 La organización por sprints permitió dividir el proyecto en etapas relacionadas con las competencias de la asignatura. La reconstrucción del backlog facilita identificar las funcionalidades desarrolladas, sus dependencias y los resultados que deben demostrarse. Al 13 de noviembre de 2026, el producto, las evidencias técnicas, el informe integrado en PDF y la presentación para la defensa están elaborados. La instalación limpia se validó en un entorno aislado y el entorno original permaneció intacto.
 
 \newpage
 
-# 4. MANUAL TÉCNICO
+# 14. MANUAL TÉCNICO
 
-## 4.1 Descripción general
+## 14.1 Descripción general
 
 El proyecto implementa una base de datos distribuida para administrar reservaciones hoteleras en Cancún, Tulum y Bacalar. La arquitectura utiliza cuatro instancias independientes de PostgreSQL 18.6 ejecutadas mediante Docker Compose [1], [3].
 
@@ -805,7 +896,7 @@ Tres instancias funcionan como nodos operativos y una cuarta instancia funciona 
 
 El modelo lógico de la base de datos, sus entidades principales, atributos, claves y relaciones se representa en el [diagrama entidad-relación](09_diagrama_entidad_relacion.md). Este documento también muestra las especializaciones implementadas mediante herencia nativa de PostgreSQL [9].
 
-## 4.2 Arquitectura
+## 14.2 Arquitectura
 
 | Nodo    | Contenedor             | Base de datos | Puerto local |
 | ------- | ---------------------- | ------------- | -----------: |
@@ -820,7 +911,7 @@ Cada nodo operativo administra sus operaciones hoteleras. El nodo central recibe
 
 La distribución de los componentes, las conexiones entre los cuatro nodos, la replicación lógica, el particionamiento [16] y las consultas mediante PostgreSQL FDW se muestran en el [diagrama de arquitectura distribuida](10_diagrama_arquitectura.md).
 
-## 4.3 Requisitos de instalación
+## 14.3 Requisitos de instalación
 
 - Windows 11 o sistema compatible.
 - Docker Desktop con soporte para contenedores Linux.
@@ -830,7 +921,7 @@ La distribución de los componentes, las conexiones entre los cuatro nodos, la r
 - Visual Studio Code.
 - pgAdmin (opcional para administración gráfica).
 
-## 4.4 Estructura del proyecto
+## 14.4 Estructura del proyecto
 
 ```text
 proyecto-hotelero-distribuido/
@@ -864,7 +955,7 @@ proyecto-hotelero-distribuido/
 └── .env
 ```
 
-## 4.5 Configuración de variables de entorno
+## 14.5 Configuración de variables de entorno
 
 El archivo `.env` contiene las credenciales utilizadas por los contenedores.
 
@@ -894,7 +985,7 @@ El módulo `python/hotel_config.py` centraliza la configuración. Primero consul
 
 Si `HOTEL_EXPECTED_ENV` está definida y no coincide con `HOTEL_ENV_NAME`, los scripts se detienen antes de conectarse. Esto permite ejecutar el cliente y las pruebas contra una copia aislada sin riesgo de usar el entorno original por error.
 
-## 4.6 Inicio de los servicios
+## 14.6 Inicio de los servicios
 
 Desde PowerShell, en la raíz del proyecto:
 
@@ -922,7 +1013,7 @@ docker compose stop
 
 No se recomienda utilizar comandos que eliminen volúmenes cuando se desea conservar los datos.
 
-## 4.7 Instalación de la estructura de bases de datos
+## 14.7 Instalación de la estructura de bases de datos
 
 El proyecto contiene el script:
 
@@ -948,13 +1039,13 @@ Para una instalación limpia:
 
 6. Confirmar la operación cuando el script lo solicite.
 7. Verificar publicaciones, suscripciones y tablas externas.
-8. Cargar los datos de demostración con el paso independiente de la sección 4.7.1.
+8. Cargar los datos de demostración con el paso independiente de la sección 14.7.1.
 
 Durante la configuración de las conexiones distribuidas, el instalador solicita las contraseñas de FDW y de replicación mediante `Read-Host -AsSecureString`. Los valores se pasan a `psql` solo mediante variables de entorno temporales y se eliminan al finalizar. Antes de crear las suscripciones, el instalador verifica la conectividad de los servidores FDW.
 
 El instalador fue validado de principio a fin el 13 de noviembre de 2026 en una copia aislada con contenedores `hotel-prueba-postgres-*`, puertos `5641`–`5644`, red `hotel-prueba-red` y volúmenes propios. La ejecución creó las cuatro bases, tres publicaciones de ocho tablas cada una, tres suscripciones, 24 relaciones de suscripción en estado `r` y 24 tablas externas de FDW. El entorno original no se modificó. Las evidencias están en `evidence/validacion_entorno_limpio_20261113/`.
 
-### 4.7.1 Carga de datos de demostración
+### 14.7.1 Carga de datos de demostración
 
 La carga de datos demo es independiente de la instalación estructural y debe ejecutarse después de crear las publicaciones y suscripciones:
 
@@ -964,7 +1055,7 @@ La carga de datos demo es independiente de la instalación estructural y debe ej
 
 El script carga datos en Cancún, Tulum y Bacalar para que la replicación los propague al nodo central. Es idempotente: utiliza identificadores fijos y actualizaciones controladas, por lo que puede ejecutarse varias veces sin duplicar registros. En la validación se ejecutó dos veces y los conteos no cambiaron.
 
-## 4.8 Modelo de datos
+## 14.8 Modelo de datos
 
 Las principales tablas operativas son:
 
@@ -981,12 +1072,14 @@ Las principales tablas operativas son:
 
 Se utilizan claves primarias UUID, claves foráneas, restricciones CHECK, índices únicos y restricciones de exclusión para mantener la integridad de los datos [7].
 
-## 4.9 Características orientadas a objetos
+## 14.9 Características orientadas a objetos
 
 Se implementan tipos compuestos:
 
 - `direccion_type`
 - `rango_estancia`
+
+El tipo compuesto `rango_estancia` se definió para representar una entrada y una salida; para la restricción de traslapes se utilizó el tipo nativo `DATERANGE` (columna `periodo`), que ofrece operadores de solapamiento e índices GiST.
 
 También se utilizan:
 
@@ -996,7 +1089,7 @@ También se utilizan:
 
 La herencia de PostgreSQL no transmite automáticamente las claves primarias ni las claves foráneas. Por ello, las tablas especializadas incluyen restricciones explícitas [9].
 
-## 4.10 Funciones y triggers
+## 14.10 Funciones y triggers
 
 Las funciones principales son:
 
@@ -1022,7 +1115,7 @@ Los triggers se dividen en dos grupos:
 - Calculan el saldo pendiente.
 - Validan asociaciones y monedas.
 
-## 4.11 Índices y optimización
+## 14.11 Índices y optimización
 
 Se utilizan tres tipos principales de índices [10]:
 
@@ -1036,12 +1129,12 @@ Resultados observados:
 
 | Consulta      |    Antes |  Después |  Mejora |
 | ------------- | -------: | -------: | ------: |
-| Índice B-tree | 5.967 ms | 0.230 ms | 96.15 % |
-| Índice GiST   | 7.497 ms | 0.406 ms | 94.58 % |
+| Índice B-tree | 13.018 ms | 0.056 ms | 99.57 % |
+| Índice GiST   |  9.308 ms | 0.343 ms | 96.31 % |
 
 Las mediciones representan los planes y tiempos obtenidos en el entorno local de prueba. La comparación sin índice se simuló deshabilitando los métodos de acceso por índice durante la consulta; no representa una medición histórica previa a la creación del índice.
 
-## 4.12 Concurrencia e integridad
+## 14.12 Concurrencia e integridad
 
 La función de creación de reservaciones utiliza bloqueo de fila mediante `SELECT FOR UPDATE` [13].
 
@@ -1049,7 +1142,7 @@ Además, la tabla `reservaciones` implementa una restricción de exclusión GiST
 
 La prueba Python utiliza dos hilos y conexiones independientes. El resultado fue una reservación aceptada y otra rechazada por la restricción `ex_reservacion_sin_traslape`.
 
-## 4.13 Respaldo y recuperación
+## 14.13 Respaldo y recuperación
 
 En el nodo Cancún se configuraron:
 
@@ -1071,7 +1164,7 @@ La prueba confirmó que se recuperó el estado anterior al registro insertado de
 
 El procedimiento de respaldo y PITR fue comprobado en Cancún, no en los cuatro nodos.
 
-## 4.14 Replicación lógica
+## 14.14 Replicación lógica
 
 Cada sede publica ocho tablas operativas:
 
@@ -1092,7 +1185,7 @@ El nodo central contiene tres suscripciones:
 
 Las publicaciones utilizan filtros por `sede_id`. Se verificó la propagación de operaciones INSERT, UPDATE y DELETE mediante replicación lógica [17].
 
-## 4.15 Consultas distribuidas
+## 14.15 Consultas distribuidas
 
 El nodo central utiliza la extensión `postgres_fdw` para acceder a las tres sedes [18].
 
@@ -1110,7 +1203,7 @@ Las tablas remotas se organizan en los esquemas:
 
 La vista `vw_reservaciones_distribuidas` permite consultar reservaciones de las tres sedes.
 
-## 4.16 Transacciones distribuidas
+## 14.16 Transacciones distribuidas
 
 El traslado de reservaciones se implementó mediante coordinación desde Python y transacciones preparadas de PostgreSQL [19].
 
@@ -1126,7 +1219,7 @@ En el entorno limpio aislado, la prueba se ejecutó dos veces consecutivas con c
 
 La coordinación de las dos transacciones es responsabilidad del programa Python. No se atribuye a `postgres_fdw` la ejecución automática de 2PC.
 
-## 4.17 Cliente Python
+## 14.17 Cliente Python
 
 El archivo principal es:
 
@@ -1156,7 +1249,7 @@ El cliente permite seleccionar una sede, consultar disponibilidad, crear reserva
 
 La conexión con PostgreSQL se realiza mediante Psycopg 3 [5].
 
-## 4.18 Pruebas automatizadas
+## 14.18 Pruebas automatizadas
 
 Los archivos de prueba principales son:
 
@@ -1178,7 +1271,7 @@ La prueba de concurrencia requiere los registros de sede, huésped, habitación 
 
 Ambas pruebas devuelven `0` cuando el resultado es correcto y `1` cuando fallan. En la validación del entorno limpio, la prueba de concurrencia devolvió `0` y la prueba 2PC devolvió `0` en dos ejecuciones consecutivas.
 
-## 4.19 Seguridad y mantenimiento
+## 14.19 Seguridad y mantenimiento
 
 - No publicar contraseñas ni archivos `.env`.
 - No ejecutar scripts destructivos sobre bases con información.
@@ -1188,7 +1281,7 @@ Ambas pruebas devuelven `0` cuando el resultado es correcto y `1` cuando fallan.
 - Probar los procedimientos de recuperación en entornos independientes.
 - Utilizar credenciales con privilegios mínimos en un despliegue real.
 
-## 4.20 Limitaciones técnicas
+## 14.20 Limitaciones técnicas
 
 La solución se encuentra implementada en un entorno local de demostración. La replicación lógica y las consultas distribuidas fueron probadas, pero la arquitectura todavía requiere controles adicionales para producción, como restricciones de escritura por sede, administración de usuarios y privilegios, gestión segura de credenciales y monitoreo de disponibilidad.
 
@@ -1200,15 +1293,15 @@ El respaldo PITR está configurado en Cancún. Para una infraestructura producti
 
 \newpage
 
-# 5. MANUAL DE USUARIO
+# 15. MANUAL DE USUARIO
 
-## 5.1 Introducción
+## 15.1 Introducción
 
 Este manual describe el uso del cliente de demostración desarrollado en Python para administrar operaciones básicas de reservaciones hoteleras en Cancún, Tulum y Bacalar.
 
 La aplicación funciona desde una consola y se conecta a las bases de datos PostgreSQL correspondientes. También permite consultar información consolidada desde el nodo central.
 
-## 5.2 Requisitos
+## 15.2 Requisitos
 
 - Docker Desktop activo.
 - Contenedores del proyecto en ejecución.
@@ -1216,7 +1309,7 @@ La aplicación funciona desde una consola y se conecta a las bases de datos Post
 - Dependencias instaladas.
 - Contraseña de PostgreSQL disponible mediante la variable de entorno HOTEL_DB_PASSWORD. Si no está configurada, el cliente solicita la contraseña directamente en la consola.
 
-## 5.3 Inicio de la aplicación
+## 15.3 Inicio de la aplicación
 
 Abrir PowerShell en la carpeta del proyecto y ejecutar:
 
@@ -1236,7 +1329,7 @@ SISTEMA DE RESERVACIONES HOTELERAS
 0. Salir
 ```
 
-## 5.4 Seleccionar una sede
+## 15.4 Seleccionar una sede
 
 Seleccionar la opción correspondiente a la sede que se desea administrar.
 
@@ -1252,7 +1345,7 @@ Cada sede presenta las siguientes opciones:
 0. Regresar
 ```
 
-## 5.5 Consultar disponibilidad
+## 15.5 Consultar disponibilidad
 
 1. Seleccionar una sede.
 2. Elegir la opción de consulta de disponibilidad.
@@ -1262,7 +1355,7 @@ Cada sede presenta las siguientes opciones:
 
 El sistema consulta la función `fn_consultar_disponibilidad` y muestra las habitaciones que cumplen las condiciones de capacidad, estado, tarifa y fechas.
 
-## 5.6 Crear una reservación
+## 15.6 Crear una reservación
 
 1. Seleccionar la sede.
 2. Elegir crear reservación.
@@ -1278,7 +1371,7 @@ La aplicación invoca `fn_crear_reservacion`, que valida la información y calcu
 
 Si la operación se completa, se muestra el identificador UUID de la reservación.
 
-## 5.7 Consultar reservaciones
+## 15.7 Consultar reservaciones
 
 Seleccionar la opción correspondiente para consultar las reservaciones de la sede.
 
@@ -1293,7 +1386,7 @@ El sistema muestra información como:
 - Importe pagado.
 - Saldo pendiente.
 
-## 5.8 Realizar check-in
+## 15.8 Realizar check-in
 
 1. Seleccionar la sede.
 2. Elegir la opción de check-in.
@@ -1302,7 +1395,7 @@ El sistema muestra información como:
 
 El sistema ejecuta `fn_realizar_checkin`. Si las validaciones se cumplen, la reservación cambia a `CHECK_IN` y la habitación se actualiza a ocupada.
 
-## 5.9 Realizar check-out
+## 15.9 Realizar check-out
 
 1. Seleccionar la sede.
 2. Elegir la opción de check-out.
@@ -1311,7 +1404,7 @@ El sistema ejecuta `fn_realizar_checkin`. Si las validaciones se cumplen, la res
 
 El sistema ejecuta `fn_realizar_checkout`. La reservación cambia a `FINALIZADA` y se actualiza el estado de la habitación según las reservaciones activas correspondientes.
 
-## 5.10 Cancelar reservación
+## 15.10 Cancelar reservación
 
 1. Seleccionar la sede.
 2. Elegir la opción de cancelar.
@@ -1320,7 +1413,7 @@ El sistema ejecuta `fn_realizar_checkout`. La reservación cambia a `FINALIZADA`
 
 La aplicación ejecuta `fn_cancelar_reservacion`. Solo se permiten los estados contemplados por la función. Las reservaciones con check-in realizado no pueden cancelarse mediante esta operación.
 
-## 5.11 Consultar reporte consolidado
+## 15.11 Consultar reporte consolidado
 
 En el menú principal seleccionar:
 
@@ -1332,7 +1425,7 @@ La aplicación se conecta al nodo central y consulta `vw_reservaciones_distribui
 
 El resultado muestra información de las reservaciones procedentes de las tres sedes.
 
-## 5.12 Mensajes y errores
+## 15.12 Mensajes y errores
 
 La aplicación puede mostrar mensajes cuando:
 
@@ -1346,7 +1439,7 @@ La aplicación puede mostrar mensajes cuando:
 
 Cuando se presente un error, se debe verificar que los contenedores estén activos, que la contraseña sea correcta y que los datos introducidos correspondan a los registros existentes.
 
-## 5.13 Recomendaciones
+## 15.13 Recomendaciones
 
 - Utilizar fechas en el formato solicitado por el programa.
 - Conservar los UUID de las reservaciones.
@@ -1355,7 +1448,7 @@ Cuando se presente un error, se debe verificar que los contenedores estén activ
 - No modificar manualmente los datos de prueba mientras se realizan demostraciones.
 - Utilizar el reporte consolidado para consultar información general.
 
-## 5.14 Alcance de la aplicación
+## 15.14 Alcance de la aplicación
 
 El cliente es una herramienta académica de demostración. No implementa una interfaz gráfica, autenticación de usuarios, facturación electrónica ni procesamiento de pagos reales.
 
@@ -1365,7 +1458,7 @@ El cliente es una herramienta académica de demostración. No implementa una int
 
 \newpage
 
-# 6. REFERENCIAS BIBLIOGRÁFICAS
+# 16. REFERENCIAS BIBLIOGRÁFICAS
 
 [1] PostgreSQL Global Development Group, “PostgreSQL 18 Documentation.” [En línea]. Disponible en: https://www.postgresql.org/docs/18/. [Consultado: 11-nov-2026].
 
@@ -1409,9 +1502,9 @@ El cliente es una herramienta académica de demostración. No implementa una int
 
 \newpage
 
-# 7. DECLARACIÓN DE USO DE INTELIGENCIA ARTIFICIAL
+# 17. DECLARACIÓN DE USO DE INTELIGENCIA ARTIFICIAL
 
-## 7.1 Declaración
+## 17.1 Declaración
 
 Durante el desarrollo del proyecto integrador denominado **“Base de datos distribuida para reservaciones de una cadena hotelera con sedes en Cancún, Tulum y Bacalar”**, se utilizó ChatGPT, desarrollado por OpenAI, como herramienta de apoyo académico y técnico.
 
@@ -1419,7 +1512,7 @@ La herramienta se empleó para resolver dudas técnicas, revisar fragmentos de c
 
 La inteligencia artificial no sustituyó la implementación ni la verificación del proyecto. El alumno realizó las modificaciones, ejecutó los scripts y configuraciones en su entorno local y comprobó los resultados mediante PostgreSQL, Python, Docker y Git. Las propuestas generadas se revisaron antes de incorporarse al proyecto.
 
-## 7.2 Actividades en las que se utilizó
+## 17.2 Actividades en las que se utilizó
 
 La inteligencia artificial se utilizó como apoyo en las siguientes actividades:
 
@@ -1437,7 +1530,7 @@ La inteligencia artificial se utilizó como apoyo en las siguientes actividades:
 - Elaboración y organización de documentación técnica y académica.
 - Preparación de explicaciones para la presentación y defensa del proyecto.
 
-## 7.3 Responsabilidad académica
+## 17.3 Responsabilidad académica
 
 El alumno es responsable del contenido, diseño, implementación, funcionamiento y resultados presentados en el proyecto.
 
@@ -1447,14 +1540,14 @@ Las sugerencias que no fueron implementadas o verificadas no se presentan como f
 
 La interpretación de los resultados, las decisiones de diseño y la validación de los componentes corresponden al alumno.
 
-## 7.4 Herramienta utilizada
+## 17.4 Herramienta utilizada
 
 - **Desarrollador:** OpenAI.
 - **Herramienta:** ChatGPT.
 - **Modelo utilizado:** GPT-5.
 - **Uso principal:** asistencia técnica, análisis, revisión de código, resolución de dudas y apoyo en la documentación del proyecto.
 
-## 7.5 Compromiso de transparencia
+## 17.5 Compromiso de transparencia
 
 Se reconoce expresamente el uso de inteligencia artificial como herramienta de apoyo durante el desarrollo del proyecto.
 
@@ -1468,9 +1561,11 @@ El uso de esta herramienta no sustituye la comprensión de los conceptos ni la c
 
 \newpage
 
-# 8. BITÁCORA DE USO DE INTELIGENCIA ARTIFICIAL
+# 18. BITÁCORA DE USO DE INTELIGENCIA ARTIFICIAL
 
-## 8.1 Registro de interacciones
+## 18.1 Registro de interacciones
+
+Todas las interacciones se realizaron con ChatGPT (OpenAI), modelo GPT-5. La fecha se expresa como mes de desarrollo porque no se conservó un registro diario.
 
 | N.º | Solicitud realizada                                                                                 | Resultado de la herramienta                                                                             | Decisión del alumno                                         | Verificación                                                                                                                                                                                               |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1485,7 +1580,26 @@ El uso de esta herramienta no sustituye la comprensión de los conceptos ni la c
 | 9   | Desarrollar un cliente de demostración para las operaciones hoteleras.                              | Se propuso un cliente de consola en Python conectado a las cuatro bases.                                | Aceptada.                                                   | Se probaron consultas, creación, cancelación, check-in, check-out y reportes consolidados.                                                                                                                 |
 | 10  | Revisar la instalación y organizar la documentación del proyecto.                                   | Se propusieron mejoras al instalador, README, manuales, informe académico y documentos complementarios. | Aceptada y verificada.                                      | Se revisaron los documentos y las referencias cruzadas. El instalador se ejecutó de principio a fin en un entorno limpio aislado el 13 de noviembre de 2026; se comprobaron 24 relaciones de replicación, 24 tablas FDW y las pruebas de concurrencia y 2PC. |
 
-## 8.2 Evaluación del uso de inteligencia artificial
+
+### Fecha y motivo de las decisiones
+
+
+| N.º | Fecha | Motivo de la decisión |
+| --- | --- | --- |
+| 1 | 2026-11 | Se aceptó porque la arquitectura de cuatro nodos cubría replicación, FDW y reportes. |
+| 2 | 2026-11 | Se corrigió durante la implementación para ajustar claves, restricciones y tipos a PostgreSQL. |
+| 3 | 2026-11 | Se aceptó porque permitió demostrar herencia, tipos compuestos, arreglos y JSONB con datos verificables. |
+| 4 | 2026-11 | Se ajustó a bloqueo FOR UPDATE y restricción GiST; la prueba de concurrencia confirmó el rechazo 23P01. |
+| 5 | 2026-11 | Se corrigió la auditoría para registrar tabla, operación, identificador y datos; se verificó con triggers. |
+| 6 | 2026-11 | Se aceptó tras generar 50,000 registros y comparar los planes con y sin índices. |
+| 7 | 2026-11 | Se corrigió la configuración de replicación y FDW hasta verificar 24 relaciones y 24 tablas externas. |
+| 8 | 2026-11 | Se aceptó porque el 2PC automatizado pasó dos veces y no dejó transacciones preparadas. |
+| 9 | 2026-11 | Se aceptó porque el cliente permitió ejecutar las operaciones y el reporte consolidado. |
+| 10 | 2026-11 | Se aceptó y verificó con la instalación limpia del 13/11/2026 y la revisión de documentos. |
+
+Los criterios completos de aceptación se encuentran en la sección 12.4.
+
+## 18.2 Evaluación del uso de inteligencia artificial
 
 La inteligencia artificial facilitó la comprensión de conceptos de PostgreSQL y permitió agilizar el análisis de errores durante la implementación. También contribuyó a organizar las actividades de desarrollo y a estructurar la documentación técnica y académica.
 
@@ -1495,7 +1609,7 @@ Cuando se identificaron errores o diferencias entre las propuestas y el comporta
 
 La herramienta funcionó como apoyo para el análisis y la resolución de problemas, mientras que la implementación y la comprobación de los resultados fueron realizadas por el alumno.
 
-## 8.3 Limitaciones identificadas
+## 18.3 Limitaciones identificadas
 
 Durante el uso de inteligencia artificial y el desarrollo del proyecto se identificaron las siguientes limitaciones:
 
@@ -1507,7 +1621,7 @@ Durante el uso de inteligencia artificial y el desarrollo del proyecto se identi
 - El instalador automatizado se ejecutó de principio a fin en una copia aislada el 13 de noviembre de 2026; la validación no modificó el entorno original.
 - La inteligencia artificial no ejecutó directamente los comandos en el entorno local del alumno. Las pruebas fueron realizadas por el alumno, quien proporcionó los resultados para su análisis.
 
-## 8.4 Conclusión
+## 18.4 Conclusión
 
 El uso de inteligencia artificial funcionó como herramienta de apoyo durante las etapas de análisis, diseño, desarrollo, depuración y documentación del proyecto.
 
@@ -1699,9 +1813,11 @@ Se documenta el uso de tipos compuestos, atributos, arreglos, JSONB, herencia de
 
 Se incluyen evidencias de vistas, índices, planes de ejecución, funciones almacenadas, triggers y registros de auditoría.
 
-**Evidencia: plan ejecucion consulta**
+**Evidencia: planes de ejecución con y sin índices**
 
-![plan ejecucion consulta](../evidence/unidad_III_consultas/03_almacenamiento_consultas/01_plan_ejecucion_consulta.png){ width=6.3in }
+![Planes de ejecución con y sin índices sobre 50,000 reservaciones](../evidence/unidad_III_consultas/03_almacenamiento_consultas/01_plan_ejecucion_consulta.png){ width=6.3in }
+
+Los planes completos de las cuatro consultas están en `evidence/rendimiento_20261124/`.
 
 \newpage
 
@@ -1807,9 +1923,11 @@ Se incluyen evidencias de vistas, índices, planes de ejecución, funciones alma
 
 Se muestran las pruebas de concurrencia, restricciones de integridad, rollback, respaldos y recuperación a un punto en el tiempo.
 
-**Evidencia: prueba concurrencia reservaciones**
+**Evidencia: prueba de concurrencia (3 ejecuciones)**
 
-![prueba concurrencia reservaciones](../evidence/unidad_IV_transacciones/04_transacciones_integridad/01_prueba_concurrencia_reservaciones.png){ width=6.3in }
+![Prueba de concurrencia: 1 aceptada y 1 rechazada en cada una de las 3 ejecuciones](../evidence/unidad_IV_transacciones/04_transacciones_integridad/01_prueba_concurrencia_reservaciones.png){ width=6.3in }
+
+Las salidas completas de las tres ejecuciones están en `evidence/concurrencia_20261124/`.
 
 \newpage
 
@@ -1881,9 +1999,11 @@ Se presentan las pruebas de replicación lógica, publicaciones, particionamient
 
 \newpage
 
-**Evidencia: resultado transaccion 2pc**
+**Evidencia: transacción distribuida 2PC (2 ejecuciones)**
 
-![resultado transaccion 2pc](../evidence/unidad_V_distribuidas/05_bases_distribuidas/06_resultado_transaccion_2pc.png){ width=6.3in }
+![Resultado de las 2 ejecuciones 2PC: traslado, bitácora y 0 transacciones preparadas](../evidence/unidad_V_distribuidas/05_bases_distribuidas/06_resultado_transaccion_2pc.png){ width=6.3in }
+
+Las salidas completas de las dos ejecuciones están en `evidence/2pc_20261124/`.
 
 \newpage
 

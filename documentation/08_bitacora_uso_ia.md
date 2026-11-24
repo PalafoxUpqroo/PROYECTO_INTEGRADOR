@@ -2,6 +2,8 @@
 
 ## 8.1 Registro de interacciones
 
+Todas las interacciones se realizaron con ChatGPT (OpenAI), modelo GPT-5. La fecha se expresa como mes de desarrollo porque no se conservó un registro diario.
+
 | N.º | Solicitud realizada                                                                                 | Resultado de la herramienta                                                                             | Decisión del alumno                                         | Verificación                                                                                                                                                                                               |
 | --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Proponer una arquitectura para una base de datos distribuida de una cadena hotelera con tres sedes. | Se propuso una arquitectura con tres nodos operativos y un nodo central.                                | Aceptada y adaptada al proyecto.                            | Se implementaron cuatro instancias PostgreSQL mediante Docker Compose.                                                                                                                                     |
@@ -14,6 +16,25 @@
 | 8   | Implementar un traslado de reservaciones entre sedes.                                               | Se propuso coordinar transacciones preparadas mediante Python.                                          | Aceptada.                                                   | Se ejecutó la prueba 2PC automatizada dos veces consecutivas y se verificó el traslado de Cancún a Tulum, la bitácora DELETE/INSERT y la ausencia de transacciones preparadas pendientes. |
 | 9   | Desarrollar un cliente de demostración para las operaciones hoteleras.                              | Se propuso un cliente de consola en Python conectado a las cuatro bases.                                | Aceptada.                                                   | Se probaron consultas, creación, cancelación, check-in, check-out y reportes consolidados.                                                                                                                 |
 | 10  | Revisar la instalación y organizar la documentación del proyecto.                                   | Se propusieron mejoras al instalador, README, manuales, informe académico y documentos complementarios. | Aceptada y verificada.                                      | Se revisaron los documentos y las referencias cruzadas. El instalador se ejecutó de principio a fin en un entorno limpio aislado el 13 de noviembre de 2026; se comprobaron 24 relaciones de replicación, 24 tablas FDW y las pruebas de concurrencia y 2PC. |
+
+
+### Fecha y motivo de las decisiones
+
+
+| N.º | Fecha | Motivo de la decisión |
+| --- | --- | --- |
+| 1 | 2026-11 | Se aceptó porque la arquitectura de cuatro nodos cubría replicación, FDW y reportes. |
+| 2 | 2026-11 | Se corrigió durante la implementación para ajustar claves, restricciones y tipos a PostgreSQL. |
+| 3 | 2026-11 | Se aceptó porque permitió demostrar herencia, tipos compuestos, arreglos y JSONB con datos verificables. |
+| 4 | 2026-11 | Se ajustó a bloqueo FOR UPDATE y restricción GiST; la prueba de concurrencia confirmó el rechazo 23P01. |
+| 5 | 2026-11 | Se corrigió la auditoría para registrar tabla, operación, identificador y datos; se verificó con triggers. |
+| 6 | 2026-11 | Se aceptó tras generar 50,000 registros y comparar los planes con y sin índices. |
+| 7 | 2026-11 | Se corrigió la configuración de replicación y FDW hasta verificar 24 relaciones y 24 tablas externas. |
+| 8 | 2026-11 | Se aceptó porque el 2PC automatizado pasó dos veces y no dejó transacciones preparadas. |
+| 9 | 2026-11 | Se aceptó porque el cliente permitió ejecutar las operaciones y el reporte consolidado. |
+| 10 | 2026-11 | Se aceptó y verificó con la instalación limpia del 13/11/2026 y la revisión de documentos. |
+
+Los criterios completos de aceptación se encuentran en la sección 12.4.
 
 ## 8.2 Evaluación del uso de inteligencia artificial
 

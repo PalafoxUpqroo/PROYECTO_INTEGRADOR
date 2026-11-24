@@ -1,0 +1,38 @@
+Entorno de ejecucion: original
+  cancun  : entorno=original host=127.0.0.1 puerto=5541 base=hotel_cancun
+  tulum   : entorno=original host=127.0.0.1 puerto=5542 base=hotel_tulum
+
+========================================
+INICIANDO TRANSACCION DISTRIBUIDA 2PC
+========================================
+Limpieza cancun: sin reservaciones previas.
+Limpieza tulum: sin reservaciones previas.
+
+Periodo seleccionado: 2027-03-01 a 2027-03-03
+Marcador de prueba: PRUEBA_2PC_AUTOMATICA_f12ae7fa2d78
+Reservacion creada en Cancun: 8c5836f8-86b5-468e-b464-429502ef80e6
+
+VALIDACIONES PREVIAS CORRECTAS
+ELIMINACION PREPARADA EN CANCUN
+INSERCION PREPARADA EN TULUM
+FASE 1: CANCUN PREPARADO
+FASE 1: TULUM PREPARADO
+
+AMBAS TRANSACCIONES ESTAN PREPARADAS
+GID ORIGEN: hotel_2pc_origen_d7f8afb0e4a34bdcb9828c50b5cd6c3e
+GID DESTINO: hotel_2pc_destino_a0a2b60279fa45339c48c92a109f0abc
+FASE 2: COMMIT CONFIRMADO EN TULUM
+FASE 2: COMMIT CONFIRMADO EN CANCUN
+
+========================================
+TRANSACCION DISTRIBUIDA COMPLETADA
+========================================
+
+========================================
+VERIFICACION FINAL CORRECTA
+========================================
+Reservacion: 8c5836f8-86b5-468e-b464-429502ef80e6
+Origen: Cancun (sin registro)
+Destino: Tulum (registro presente)
+Bitacora: DELETE en Cancun, INSERT en Tulum
+Transacciones preparadas: 0

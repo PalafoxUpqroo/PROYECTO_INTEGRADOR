@@ -331,7 +331,7 @@ El resultado comprobado fue:
 - Una reservación rechazada por la restricción de exclusión GiST.
 - Ninguna sobreventa de la habitación.
 
-La operación rechazada produjo el código SQLSTATE `23P01`, correspondiente a una violación de restricción de exclusión. La prueba se ejecutó satisfactoriamente en tres ocasiones en el entorno original y volvió a pasar en el entorno limpio aislado.
+La operación rechazada produjo el código SQLSTATE `23P01`, correspondiente a una violación de restricción de exclusión. La prueba se ejecutó satisfactoriamente en tres ocasiones en el entorno original y volvió a pasar en el entorno limpio aislado. Las salidas de las tres ejecuciones están en `evidence/concurrencia_20261124/`.
 
 Ejecutar:
 
@@ -354,7 +354,7 @@ La prueba crea su propia reservación en Cancún, captura su identificador y la 
 
 Las reservaciones creadas por ejecuciones anteriores se identifican con el marcador `PRUEBA_2PC_AUTOMATICA` y se eliminan al inicio. Por ello, la prueba puede ejecutarse repetidamente sin editar identificadores. Al finalizar, deja la última reservación trasladada en Tulum como evidencia y comprueba que no queden transacciones preparadas pendientes en los nodos participantes.
 
-La prueba comprobó que la reservación dejó de existir en el nodo de origen, se conservó en el nodo de destino con la misma identificación, la bitácora registró `DELETE` en Cancún e `INSERT` en Tulum, y no quedaron transacciones preparadas pendientes. Se ejecutó dos veces consecutivas con identificadores distintos y código de salida `0` en el entorno limpio aislado.
+La prueba comprobó que la reservación dejó de existir en el nodo de origen, se conservó en el nodo de destino con la misma identificación, la bitácora registró `DELETE` en Cancún e `INSERT` en Tulum, y no quedaron transacciones preparadas pendientes. Se ejecutó dos veces consecutivas con identificadores distintos y código de salida `0` en el entorno limpio aislado. También se ejecutó dos veces en el entorno original el 24/11/2026; las salidas están en `evidence/2pc_20261124/`.
 
 Ejecutar:
 
@@ -378,14 +378,14 @@ Estas pruebas deben ejecutarse únicamente en el entorno destinado al proyecto, 
 
 Se realizaron pruebas de rendimiento con 50,000 reservaciones generadas para comparar consultas con y sin utilización de índices.
 
-Los resultados registrados durante el desarrollo fueron:
+Los resultados de la ejecución del 24/11/2026, con 50,000 reservaciones, fueron:
 
 | Consulta | Sin índice | Con índice | Mejora aproximada |
 | -------- | ---------: | ---------: | ----------------: |
-| B-tree   |   5.967 ms |   0.230 ms |           96.15 % |
-| GiST     |   7.497 ms |   0.406 ms |           94.58 % |
+| B-tree   |  13.018 ms |   0.056 ms |           99.57 % |
+| GiST     |   9.308 ms |   0.343 ms |           96.31 % |
 
-Las pruebas utilizaron `EXPLAIN ANALYZE` para revisar los planes de ejecución.
+Las pruebas utilizaron `EXPLAIN ANALYZE` para revisar los planes de ejecución. Las salidas completas están en `evidence/rendimiento_20261124/`.
 
 Para obtener la comparación sin índices se simularon las condiciones de ejecución deshabilitando los métodos de acceso por índices. Por tanto, los valores representan las ejecuciones medidas durante las pruebas y no una comparación histórica entre dos bases de datos diferentes.
 
@@ -480,6 +480,8 @@ El proyecto cuenta con los siguientes componentes implementados y probados:
 - Traslado de reservaciones mediante 2PC automatizado.
 - Cliente Python de demostración.
 - Instalador validado en un entorno limpio aislado, con datos demo, replicación y pruebas de concurrencia y 2PC.
+- Lista de cotejo 19/19 y matriz de trazabilidad en el informe (sección 9.2).
+- Evidencias renovadas de concurrencia, 2PC y rendimiento en `evidence/concurrencia_20261124/`, `evidence/2pc_20261124/` y `evidence/rendimiento_20261124/`.
 
 El instalador automatizado fue ejecutado de principio a fin en una copia aislada y sus resultados se verificaron sin modificar el entorno original. Las evidencias están en `evidence/validacion_entorno_limpio_20261113/`.
 

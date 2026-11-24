@@ -176,9 +176,11 @@ Se documenta el uso de tipos compuestos, atributos, arreglos, JSONB, herencia de
 
 Se incluyen evidencias de vistas, índices, planes de ejecución, funciones almacenadas, triggers y registros de auditoría.
 
-**Evidencia: plan ejecucion consulta**
+**Evidencia: planes de ejecución con y sin índices**
 
-![plan ejecucion consulta](../evidence/unidad_III_consultas/03_almacenamiento_consultas/01_plan_ejecucion_consulta.png){ width=6.3in }
+![Planes de ejecución con y sin índices sobre 50,000 reservaciones](../evidence/unidad_III_consultas/03_almacenamiento_consultas/01_plan_ejecucion_consulta.png){ width=6.3in }
+
+Los planes completos de las cuatro consultas están en `evidence/rendimiento_20261124/`.
 
 \newpage
 
@@ -284,9 +286,11 @@ Se incluyen evidencias de vistas, índices, planes de ejecución, funciones alma
 
 Se muestran las pruebas de concurrencia, restricciones de integridad, rollback, respaldos y recuperación a un punto en el tiempo.
 
-**Evidencia: prueba concurrencia reservaciones**
+**Evidencia: prueba de concurrencia (3 ejecuciones)**
 
-![prueba concurrencia reservaciones](../evidence/unidad_IV_transacciones/04_transacciones_integridad/01_prueba_concurrencia_reservaciones.png){ width=6.3in }
+![Prueba de concurrencia: 1 aceptada y 1 rechazada en cada una de las 3 ejecuciones](../evidence/unidad_IV_transacciones/04_transacciones_integridad/01_prueba_concurrencia_reservaciones.png){ width=6.3in }
+
+Las salidas completas de las tres ejecuciones están en `evidence/concurrencia_20261124/`.
 
 \newpage
 
@@ -356,9 +360,11 @@ Se presentan las pruebas de replicación lógica, publicaciones, particionamient
 
 \newpage
 
-**Evidencia: resultado transaccion 2pc**
+**Evidencia: transacción distribuida 2PC (2 ejecuciones)**
 
-![resultado transaccion 2pc](../evidence/unidad_V_distribuidas/05_bases_distribuidas/06_resultado_transaccion_2pc.png){ width=6.3in }
+![Resultado de las 2 ejecuciones 2PC: traslado, bitácora y 0 transacciones preparadas](../evidence/unidad_V_distribuidas/05_bases_distribuidas/06_resultado_transaccion_2pc.png){ width=6.3in }
+
+Las salidas completas de las dos ejecuciones están en `evidence/2pc_20261124/`.
 
 \newpage
 

@@ -1,0 +1,14 @@
+SET
+SET
+SET
+                                                     QUERY PLAN
+--------------------------------------------------------------------------------------------------------------------
+ Seq Scan on reservaciones  (cost=0.00..1942.08 rows=1000 width=172) (actual time=2.810..9.250 rows=900.00 loops=1)
+   Filter: (periodo && '[2020-06-01,2020-06-10)'::daterange)
+   Rows Removed by Filter: 49106
+   Buffers: shared hit=1317
+ Planning:
+   Buffers: shared hit=228
+ Planning Time: 0.703 ms
+ Execution Time: 9.308 ms
+(8 rows)

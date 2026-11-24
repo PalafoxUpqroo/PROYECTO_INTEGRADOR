@@ -130,7 +130,11 @@ Primero, se crearon dos tipos compuestos:
 - `direccion_type`: almacena calle, número, colonia, ciudad, estado, código postal y país.
 - `rango_estancia`: representa una fecha de entrada y una fecha de salida.
 
+El tipo compuesto `rango_estancia` se definió para representar una entrada y una salida; para la restricción de traslapes se utilizó el tipo nativo `DATERANGE` (columna `periodo`), que ofrece operadores de solapamiento e índices GiST.
+
 También se utilizaron arreglos mediante el atributo `amenidades` de las habitaciones, que permite almacenar varios elementos en una sola columna. Para las preferencias de los huéspedes se incorporó el tipo `JSONB` [8], que permite guardar información semiestructurada.
+
+Además de los arreglos, se comprobó el comportamiento de conjuntos mediante `UNION`, `INTERSECT` y `EXCEPT` sobre las amenidades de las habitaciones (Anexo B, evidencia 17).
 
 Se implementó herencia de tablas mediante `INHERITS` [9]. Se definieron las tablas padre `huesped_especializacion` y `habitacion_especializacion`, con sus respectivas tablas especializadas para huéspedes individuales, huéspedes corporativos, habitaciones estándar y suites.
 
@@ -151,6 +155,8 @@ Se crearon las siguientes vistas operativas:
 - `vw_servicios_reservacion`: presenta los servicios asociados a las reservaciones.
 
 En el nodo central también se creó `vw_reservaciones_distribuidas`, que permite consultar reservaciones de las tres sedes mediante conexiones distribuidas.
+
+La disponibilidad se implementó como función (`fn_consultar_disponibilidad`) porque recibe fechas y número de huéspedes como parámetros; las vistas cubren la ocupación, el detalle de reservaciones y los servicios.
 
 ### Funciones almacenadas
 
@@ -176,14 +182,18 @@ Se generaron 50,000 reservaciones de prueba y se analizaron consultas con `EXPLA
 
 | Consulta | Sin utilizar métodos de acceso por índice | Con índice | Mejora aproximada |
 | -------- | ----------------------------------------: | ---------: | ----------------: |
-| B-tree   |                                  5.967 ms |   0.230 ms |           96.15 % |
-| GiST     |                                  7.497 ms |   0.406 ms |           94.58 % |
+| B-tree   |                                 13.018 ms |   0.056 ms |           99.57 % |
+| GiST     |                                  9.308 ms |   0.343 ms |           96.31 % |
 
 En la consulta B-tree se pasó de un recorrido secuencial (`Seq Scan`) a un recorrido mediante índice (`Index Scan`). En la consulta GiST se utilizó un recorrido de índice y acceso por bloques (`Bitmap Index Scan` y `Bitmap Heap Scan`).
 
 La comparación sin índices se realizó mediante la desactivación de los métodos de acceso por índice durante la prueba. Por lo tanto, representa una comparación controlada y no una medición histórica tomada antes de crear los índices.
 
 **Resultado:** se comprobó el funcionamiento de las vistas, funciones, triggers e índices. Las pruebas de cálculo de importes verificaron que los servicios modifican el total de la reservación y que los pagos actualizan el saldo pendiente. También se validó que un pago superior al total permitido sea rechazado.
+
+### Estructura de archivos de almacenamiento
+
+La estructura física se verificó con `pg_relation_filepath`, `pg_class.relfilenode` y `pg_relation_size`. La tabla `reservaciones` de Cancún se almacena en `/var/lib/postgresql/18/docker/base/16384/17513`, y sus índices ocupan archivos separados dentro del mismo directorio (Anexo C, evidencias 10 y 11).
 
 ## 8.4 Unidad IV. Transacciones, integridad y recuperación
 
@@ -204,6 +214,10 @@ Se desarrolló una prueba en Python utilizando dos hilos y conexiones independie
 - El código SQLSTATE devuelto fue `23P01`.
 - No se registraron errores inesperados.
 - La prueba confirmó que no se produjo una doble reservación.
+
+### Transacciones y reversión
+
+Se ejecutó una transacción de prueba con `BEGIN`, `INSERT`, `SELECT` y `ROLLBACK`. Después del `ROLLBACK`, la tabla temporal quedó con 0 registros, lo que confirma que los cambios no se confirman hasta ejecutar `COMMIT` (Anexo D, evidencia 05).
 
 ### Respaldo completo
 
@@ -249,6 +263,10 @@ En el nodo central se convirtió la tabla `reservaciones` en una tabla particion
 
 La estructura permite organizar las reservaciones consolidadas de acuerdo con la sede de origen.
 
+### Fragmentación de datos
+
+La fragmentación es horizontal por sede: cada base operativa conserva los registros operativos de su sede y el nodo central reorganiza las reservaciones en particiones por `sede_id`. El catálogo de sedes es común a los cuatro nodos; por ello, el aislamiento de escritura se refuerza con las claves foráneas compuestas y queda como trabajo futuro un control de permisos por sede (Anexo E, evidencia 03).
+
 ### Replicación lógica
 
 Se configuró una publicación por sede y una suscripción correspondiente en el nodo central [17]:
@@ -293,7 +311,7 @@ El cliente utiliza las funciones almacenadas de PostgreSQL para ejecutar las ope
 
 **Resultado:** se comprobó la conexión con las tres sedes y el nodo central. Se realizaron pruebas de disponibilidad, creación y cancelación de reservaciones, check-in, check-out y consulta de información consolidada.
 
-# 9. Resultados generales
+# 9. Pruebas y resultados
 
 El proyecto permitió implementar y comprobar una solución distribuida para la administración de reservaciones hoteleras. Se construyeron cuatro instancias PostgreSQL, un modelo relacional con restricciones de integridad, estructuras orientadas a objetos, funciones, triggers, vistas e índices.
 
@@ -311,6 +329,33 @@ Las pruebas realizadas comprobaron los siguientes resultados:
 10. El instalador se ejecutó de principio a fin en un entorno limpio aislado, con resultados verificables de replicación, FDW y datos demo.
 
 Los resultados corresponden a las pruebas ejecutadas en el entorno de desarrollo. No deben interpretarse como una certificación de disponibilidad, seguridad o rendimiento en un entorno de producción.
+
+
+## 9.2 Lista de cotejo de evidencias
+
+| Unidad | Evidencia | Dónde se demuestra | Estado |
+| --- | --- | --- | --- |
+| I | Diagrama relacional | 8.1; Anexo A | Cumple |
+| I | Sentencias SQL de construcción (DDL/DML) | 8.1; Anexo A | Cumple |
+| I | Características del motor y gestor | 8.1; Anexo A | Cumple |
+| II | Datos complejos y estructurados almacenados | 8.2; Anexo B | Cumple |
+| II | Sentencias SQL de la herencia generada | 8.2; Anexo B | Cumple |
+| II | Herencia de tablas | 8.2; Anexo B | Cumple |
+| II | Arreglos y conjuntos | 8.2; Anexo B | Cumple |
+| III | Resultados del procesamiento de consultas (planes) | 8.3; Anexo C | Cumple |
+| III | Vistas | 8.3; Anexo C | Cumple |
+| III | Estructura de archivos de almacenamiento | 8.3; Anexo C | Cumple |
+| III | Procedimientos almacenados | 8.3; Anexo C | Cumple |
+| III | Triggers | 8.3; Anexo C | Cumple |
+| IV | Transacciones | 8.4; Anexo D | Cumple |
+| IV | Controles de concurrencia | 8.4; Anexo D | Cumple |
+| IV | Sistemas de recuperación (respaldo y restauración) | 8.4; Anexo D | Cumple |
+| V | Replicación de datos | 8.5; Anexo E | Cumple |
+| V | Fragmentación de datos | 8.5; Anexo E | Cumple |
+| V | Consultas distribuidas | 8.5; Anexo E | Cumple |
+| V | Transacciones distribuidas | 8.5; Anexo E | Cumple |
+
+La lista se contrastó con la lista de cotejo de la guía. Las 19 evidencias cuentan con respaldo en el informe y en el repositorio.
 
 # 10. Limitaciones identificadas
 

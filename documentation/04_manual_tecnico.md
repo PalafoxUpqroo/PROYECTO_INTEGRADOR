@@ -241,8 +241,8 @@ Resultados observados:
 
 | Consulta      |    Antes |  Después |  Mejora |
 | ------------- | -------: | -------: | ------: |
-| Índice B-tree | 5.967 ms | 0.230 ms | 96.15 % |
-| Índice GiST   | 7.497 ms | 0.406 ms | 94.58 % |
+| Índice B-tree | 13.018 ms | 0.056 ms | 99.57 % |
+| Índice GiST   |  9.308 ms | 0.343 ms | 96.31 % |
 
 Las mediciones representan los planes y tiempos obtenidos en el entorno local de prueba. La comparación sin índice se simuló deshabilitando los métodos de acceso por índice durante la consulta; no representa una medición histórica previa a la creación del índice.
 

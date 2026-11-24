@@ -1,0 +1,15 @@
+                                                                QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on reservaciones  (cost=88.03..1386.78 rows=1000 width=172) (actual time=0.163..0.255 rows=900.00 loops=1)
+   Recheck Cond: (periodo && '[2020-06-01,2020-06-10)'::daterange)
+   Heap Blocks: exact=25
+   Buffers: shared hit=36
+   ->  Bitmap Index Scan on idx_reservaciones_fechas  (cost=0.00..87.78 rows=1000 width=0) (actual time=0.149..0.149 rows=900.00 loops=1)
+         Index Cond: (periodo && '[2020-06-01,2020-06-10)'::daterange)
+         Index Searches: 1
+         Buffers: shared hit=11
+ Planning:
+   Buffers: shared hit=228
+ Planning Time: 0.787 ms
+ Execution Time: 0.343 ms
+(12 rows)
